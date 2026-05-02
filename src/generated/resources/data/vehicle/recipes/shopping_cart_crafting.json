@@ -1,0 +1,14 @@
+{
+  "type": "vehicle:workstation",
+  "materials": [
+    {
+      "count": 8,
+      "tag": "forge:ingots/iron"
+    },
+    {
+      "count": 4,
+      "item": "minecraft:iron_bars"
+    }
+  ],
+  "vehicle": "vehicle:shopping_cart"
+}

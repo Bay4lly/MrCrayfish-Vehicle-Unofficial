@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/gold"
+    },
+    "J": {
+      "item": "vehicle:jerry_can"
+    }
+  },
+  "pattern": [
+    "III",
+    "IJI",
+    "III"
+  ],
+  "result": {
+    "item": "vehicle:industrial_jerry_can"
+  },
+  "show_notification": true
+}

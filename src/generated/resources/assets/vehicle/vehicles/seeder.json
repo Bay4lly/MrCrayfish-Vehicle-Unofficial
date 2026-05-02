@@ -1,0 +1,25 @@
+{
+  "display": {
+    "gui": {
+      "scale": 1.35,
+      "translate": [
+        0.0,
+        0.0,
+        -0.15
+      ]
+    }
+  },
+  "general": {
+    "canBeColored": true
+  },
+  "position": {
+    "body": {
+      "scale": 1.1,
+      "translate": [
+        0.0,
+        0.325,
+        0.0
+      ]
+    }
+  }
+}

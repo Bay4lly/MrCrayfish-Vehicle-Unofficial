@@ -1,0 +1,20 @@
+{
+  "type": "vehicle:workstation",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "cfm"
+    }
+  ],
+  "materials": [
+    {
+      "count": 1,
+      "item": "cfm:rainbow_sofa"
+    },
+    {
+      "count": 8,
+      "tag": "forge:ingots/iron"
+    }
+  ],
+  "vehicle": "vehicle:sofa"
+}

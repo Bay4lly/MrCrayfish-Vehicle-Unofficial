@@ -1,0 +1,113 @@
+{
+  "axles": {
+    "lengthToFront": 8.5,
+    "lengthToRear": -8.5,
+    "offsetToGround": -1.5
+  },
+  "display": {
+    "gui": {
+      "scale": 1.5
+    },
+    "held": [
+      6.0,
+      0.0,
+      0.0
+    ],
+    "trailer": [
+      0.0,
+      -0.031,
+      -0.562
+    ]
+  },
+  "general": {
+    "canBeColored": true,
+    "canChangeWheels": true,
+    "engineType": "vehicle:electric_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.2
+    },
+    "fuelPort": {
+      "rotation": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": 0.25,
+      "translate": [
+        -8.0,
+        6.0,
+        -8.0
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        0.0,
+        1.0,
+        -6.0
+      ]
+    }
+  ],
+  "wheels": [
+    {
+      "offset": [
+        7.0,
+        0.0,
+        8.5
+      ],
+      "position": "front",
+      "scale": [
+        0.47,
+        0.47,
+        0.47
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        7.0,
+        0.0,
+        8.5
+      ],
+      "position": "front",
+      "scale": [
+        0.47,
+        0.47,
+        0.47
+      ],
+      "side": "right"
+    },
+    {
+      "offset": [
+        7.0,
+        0.0,
+        -8.5
+      ],
+      "position": "rear",
+      "scale": [
+        0.47,
+        0.47,
+        0.47
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        7.0,
+        0.0,
+        -8.5
+      ],
+      "position": "rear",
+      "scale": [
+        0.47,
+        0.47,
+        0.47
+      ],
+      "side": "right"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:dispenser"
+    },
+    "G": {
+      "tag": "forge:glass_panes"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "GDG",
+    "IHI"
+  ],
+  "result": {
+    "count": 2,
+    "item": "vehicle:fluid_pump"
+  },
+  "show_notification": true
+}

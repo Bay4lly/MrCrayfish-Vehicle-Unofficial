@@ -1,0 +1,36 @@
+{
+    "variants": {
+        "enabled=false,facing=north": {
+            "model": "vehicle:block/disabled_fluid_mixer",
+            "y": 0
+        },
+        "enabled=true,facing=north": {
+            "model": "vehicle:block/fluid_mixer",
+            "y": 0
+        },
+        "enabled=false,facing=east": {
+            "model": "vehicle:block/disabled_fluid_mixer",
+            "y": 90
+        },
+        "enabled=true,facing=east": {
+            "model": "vehicle:block/fluid_mixer",
+            "y": 90
+        },
+        "enabled=false,facing=south": {
+            "model": "vehicle:block/disabled_fluid_mixer",
+            "y": 180
+        },
+        "enabled=true,facing=south": {
+            "model": "vehicle:block/fluid_mixer",
+            "y": 180
+        },
+        "enabled=false,facing=west": {
+            "model": "vehicle:block/disabled_fluid_mixer",
+            "y": 270
+        },
+        "enabled=true,facing=west": {
+            "model": "vehicle:block/fluid_mixer",
+            "y": 270
+        }
+    }
+}

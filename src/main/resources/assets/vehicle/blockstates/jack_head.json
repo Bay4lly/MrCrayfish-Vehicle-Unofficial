@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "vehicle:block/jack_head" }
+    }
+}

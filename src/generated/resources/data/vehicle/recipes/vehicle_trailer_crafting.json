@@ -1,0 +1,14 @@
+{
+  "type": "vehicle:workstation",
+  "materials": [
+    {
+      "count": 48,
+      "tag": "forge:ingots/iron"
+    },
+    {
+      "count": 2,
+      "item": "vehicle:panel"
+    }
+  ],
+  "vehicle": "vehicle:vehicle_trailer"
+}

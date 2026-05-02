@@ -1,0 +1,36 @@
+{
+    "multipart": [
+        {
+            "when": { "disabled": "false" },
+            "apply": { "model": "vehicle:block/fluid_pipe" }
+        },
+        {
+            "when": { "disabled": "true" },
+            "apply": { "model": "vehicle:block/disabled_fluid_pipe" }
+        },
+        {
+            "when": { "up": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "x": -90, "y": 180 }
+        },
+        {
+            "when": { "down": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "x": 90 }
+        },
+        {
+            "when": { "north": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "y": 0 }
+        },
+        {
+            "when": { "east": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "y": 90 }
+        },
+        {
+            "when": { "south": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "y": 180 }
+        },
+        {
+            "when": { "west": "true" },
+            "apply": { "model": "vehicle:block/fluid_pipe_connection", "y": 270 }
+        }
+    ]
+}

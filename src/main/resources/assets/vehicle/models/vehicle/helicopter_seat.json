@@ -1,0 +1,8 @@
+{
+	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench. All Rights Reserved.",
+	"loader": "framework:open_model",
+	"textures": {
+		"seat": "vehicle:item/helicopter_seat"
+	},
+	"components": []
+}

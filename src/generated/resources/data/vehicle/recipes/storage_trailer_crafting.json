@@ -1,0 +1,18 @@
+{
+  "type": "vehicle:workstation",
+  "materials": [
+    {
+      "count": 36,
+      "tag": "forge:ingots/iron"
+    },
+    {
+      "count": 2,
+      "item": "vehicle:panel"
+    },
+    {
+      "count": 1,
+      "item": "minecraft:chest"
+    }
+  ],
+  "vehicle": "vehicle:storage_trailer"
+}

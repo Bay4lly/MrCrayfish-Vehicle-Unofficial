@@ -1,0 +1,57 @@
+{
+	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench",
+	"render_type": "cutout",
+	"texture_size": [64, 64],
+	"textures": {
+		"particle": "vehicle:block/metal",
+		"fluid_extractor": "vehicle:model/fluid_extractor"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "texture": "#fluid_extractor"},
+				"east": {"uv": [0, 4, 4, 8], "texture": "#fluid_extractor"},
+				"south": {"uv": [4, 0, 8, 4], "texture": "#fluid_extractor"},
+				"west": {"uv": [4, 4, 8, 8], "texture": "#fluid_extractor"},
+				"up": {"uv": [4, 12, 0, 8], "texture": "#fluid_extractor"},
+				"down": {"uv": [12, 0, 8, 4], "texture": "#fluid_extractor"}
+			}
+		},
+		{
+			"from": [0, 3, 7],
+			"to": [16, 16, 0],
+			"faces": {
+				"north": {"uv": [4, 8, 8, 11.25], "texture": "#fluid_extractor"},
+				"down": {"uv": [12, 4, 8, 5.75], "texture": "#fluid_extractor"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [75, -45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.375, 0.375, 0.375]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, -45, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"ground": {
+			"translation": [0, 3, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"gui": {
+			"rotation": [30, -45, 0],
+			"scale": [0.625, 0.625, 0.625]
+		},
+		"head": {
+			"rotation": [0, -180, 0]
+		},
+		"fixed": {
+			"rotation": [0, -180, 0],
+			"scale": [0.5, 0.5, 0.5]
+		}
+	}
+}

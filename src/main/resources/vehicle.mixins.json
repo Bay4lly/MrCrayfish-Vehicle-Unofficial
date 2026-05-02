@@ -1,0 +1,15 @@
+{
+    "required": true,
+    "package": "com.mrcrayfish.vehicle.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "minVersion": "0.8",
+    "refmap": "vehicle.refmap.json",
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "client": [
+        "client.ItemInHandLayerMixin",
+        "client.LivingEntityRendererMixin",
+        "client.PlayerModelMixin"
+    ]
+}

@@ -1,0 +1,93 @@
+{
+  "axles": {
+    "lengthToFront": 14.5,
+    "lengthToRear": -6.7,
+    "offsetToGround": -1.0
+  },
+  "display": {
+    "gui": {
+      "scale": 1.5,
+      "translate": [
+        0.0,
+        0.0,
+        -0.25
+      ]
+    },
+    "held": [
+      4.5,
+      2.0,
+      0.0
+    ],
+    "trailer": [
+      0.0,
+      -0.031,
+      -0.65
+    ]
+  },
+  "general": {
+    "canBeColored": true,
+    "canChangeWheels": true,
+    "engineType": "vehicle:small_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.2
+    },
+    "fuelPort": {
+      "rotation": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": 0.2,
+      "translate": [
+        -2.5,
+        4.2,
+        -1.5
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        0.0,
+        4.0,
+        -1.0
+      ]
+    }
+  ],
+  "wheels": [
+    {
+      "offset": [
+        0.0,
+        0.0,
+        14.088
+      ],
+      "particles": true,
+      "position": "front",
+      "render": false,
+      "scale": [
+        0.6,
+        0.8,
+        0.8
+      ],
+      "side": "none"
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -6.7
+      ],
+      "particles": true,
+      "position": "rear",
+      "scale": [
+        0.6,
+        0.8,
+        0.8
+      ],
+      "side": "none"
+    }
+  ]
+}

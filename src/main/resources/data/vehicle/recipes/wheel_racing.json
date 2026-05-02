@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "WLW",
+        "LIL",
+        "WLW"
+    ],
+    "key": {
+        "W": {
+            "item": "minecraft:black_wool"
+        },
+        "L": {
+            "item": "minecraft:leather"
+        },
+        "I": {
+            "item": "minecraft:diamond"
+        }
+    },
+    "result": {
+        "item": "vehicle:racing_wheel",
+        "count": 1
+    }
+}

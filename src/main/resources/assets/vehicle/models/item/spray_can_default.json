@@ -1,0 +1,68 @@
+{
+	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"spray_can": "vehicle:model/spray_can"
+	},
+	"elements": [
+		{
+			"from": [5, 0, 5],
+			"to": [11, 10, 11],
+			"faces": {
+				"north": {"uv": [3, 0, 6, 5], "texture": "#spray_can"},
+				"east": {"uv": [0, 5, 3, 10], "texture": "#spray_can"},
+				"south": {"uv": [3, 5, 6, 10], "texture": "#spray_can"},
+				"west": {"uv": [6, 0, 9, 5], "texture": "#spray_can"},
+				"down": {"uv": [9, 8, 6, 11], "texture": "#spray_can"}
+			}
+		},
+		{
+			"from": [5, 10, 5],
+			"to": [11, 14, 11],
+			"faces": {
+				"north": {"uv": [9, 3, 12, 5], "texture": "#spray_can", "tintindex": 0},
+				"east": {"uv": [9, 5, 12, 7], "texture": "#spray_can", "tintindex": 0},
+				"south": {"uv": [9, 7, 12, 9], "texture": "#spray_can", "tintindex": 0},
+				"west": {"uv": [9, 9, 12, 11], "texture": "#spray_can", "tintindex": 0},
+				"up": {"uv": [12, 3, 9, 0], "texture": "#spray_can", "tintindex": 0}
+			}
+		},
+		{
+			"from": [5, 0, 5.002],
+			"to": [11, 10, 11.002],
+			"faces": {
+				"south": {"uv": [0, 0, 3, 5], "texture": "#spray_can", "tintindex": 0}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [0, 180, 0],
+			"translation": [0, -2, -0.5],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, 180, 0],
+			"translation": [0, 1, 0],
+			"scale": [0.6, 0.6, 0.6]
+		},
+		"ground": {
+			"translation": [0, 3, 0],
+			"scale": [0.35, 0.35, 0.35]
+		},
+		"gui": {
+			"rotation": [30, 45, 0],
+			"translation": [0, 0.75, 0],
+			"scale": [0.8, 0.8, 0.8]
+		},
+		"head": {
+			"rotation": [0, -180, 0],
+			"translation": [0, 14.5, 0]
+		},
+		"fixed": {
+			"rotation": [0, 180, 0],
+			"translation": [0, 0.25, 0],
+			"scale": [0.75, 0.75, 0.75]
+		}
+	}
+}

@@ -1,0 +1,142 @@
+{
+  "axles": {
+    "lengthToFront": 10.5,
+    "lengthToRear": -10.5,
+    "offsetToGround": -1.5
+  },
+  "display": {
+    "gui": {
+      "scale": 1.5
+    },
+    "held": [
+      4.0,
+      3.5,
+      0.0
+    ],
+    "trailer": [
+      0.0,
+      0.0,
+      -0.55
+    ]
+  },
+  "general": {
+    "canBeColored": true,
+    "canChangeWheels": true,
+    "engineType": "vehicle:small_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.25
+    },
+    "fuelPort": {
+      "rotation": [
+        -90.0,
+        0.0,
+        0.0
+      ],
+      "scale": 0.35,
+      "translate": [
+        0.0,
+        6.55,
+        5.0
+      ]
+    },
+    "keyPort": {
+      "rotation": [
+        -45.0,
+        0.0,
+        0.0
+      ],
+      "scale": 0.5,
+      "translate": [
+        -5.0,
+        4.5,
+        6.5
+      ]
+    },
+    "towBar": [
+      0.0,
+      0.0,
+      -20.8
+    ]
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        0.0,
+        5.0,
+        -3.0
+      ]
+    },
+    {
+      "position": [
+        0.0,
+        5.5,
+        -12.0
+      ]
+    }
+  ],
+  "wheels": [
+    {
+      "offset": [
+        4.0,
+        0.0,
+        10.5
+      ],
+      "particles": true,
+      "position": "front",
+      "scale": [
+        1.156,
+        1.156,
+        1.156
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        4.0,
+        0.0,
+        10.5
+      ],
+      "particles": true,
+      "position": "front",
+      "scale": [
+        1.156,
+        1.156,
+        1.156
+      ],
+      "side": "right"
+    },
+    {
+      "offset": [
+        4.0,
+        0.0,
+        -10.5
+      ],
+      "particles": true,
+      "position": "rear",
+      "scale": [
+        1.156,
+        1.156,
+        1.156
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        4.0,
+        0.0,
+        -10.5
+      ],
+      "particles": true,
+      "position": "rear",
+      "scale": [
+        1.156,
+        1.156,
+        1.156
+      ],
+      "side": "right"
+    }
+  ]
+}

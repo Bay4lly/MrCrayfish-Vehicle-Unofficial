@@ -1,0 +1,22 @@
+{
+  "type": "vehicle:workstation",
+  "materials": [
+    {
+      "count": 180,
+      "tag": "forge:ingots/iron"
+    },
+    {
+      "count": 16,
+      "tag": "forge:glass_panes"
+    },
+    {
+      "count": 18,
+      "item": "minecraft:redstone"
+    },
+    {
+      "count": 32,
+      "item": "vehicle:panel"
+    }
+  ],
+  "vehicle": "vehicle:sports_plane"
+}

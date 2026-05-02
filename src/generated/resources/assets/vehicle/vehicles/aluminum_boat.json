@@ -1,0 +1,60 @@
+{
+  "general": {
+    "canBeColored": true,
+    "engineType": "vehicle:small_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.1,
+      "translate": [
+        0.0,
+        0.0,
+        0.2
+      ]
+    },
+    "fuelPort": {
+      "rotation": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": 0.25,
+      "translate": [
+        -16.0,
+        3.0,
+        -18.0
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        -7.0,
+        6.0,
+        -15.0
+      ]
+    },
+    {
+      "position": [
+        7.0,
+        6.0,
+        -15.0
+      ]
+    },
+    {
+      "position": [
+        -7.0,
+        6.0,
+        3.0
+      ]
+    },
+    {
+      "position": [
+        7.0,
+        6.0,
+        3.0
+      ]
+    }
+  ]
+}

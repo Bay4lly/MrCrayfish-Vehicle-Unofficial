@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:redstone_block"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "P": {
+      "item": "vehicle:panel"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "TBT",
+    "IPI"
+  ],
+  "result": {
+    "item": "vehicle:iron_electric_engine"
+  },
+  "show_notification": true
+}

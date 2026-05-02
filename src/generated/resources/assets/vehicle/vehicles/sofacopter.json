@@ -1,0 +1,40 @@
+{
+  "display": {
+    "gui": {
+      "scale": 1.25
+    }
+  },
+  "general": {
+    "engineType": "vehicle:small_motor"
+  },
+  "position": {
+    "body": {
+      "translate": [
+        0.0,
+        0.0,
+        0.062
+      ]
+    },
+    "fuelPort": {
+      "scale": 0.45,
+      "translate": [
+        0.0,
+        1.5,
+        8.0
+      ]
+    },
+    "keyPort": {
+      "scale": 0.8,
+      "translate": [
+        -9.25,
+        8.0,
+        5.0
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true
+    }
+  ]
+}

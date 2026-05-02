@@ -1,0 +1,95 @@
+{
+    "block.boost_pad.boost": {
+        "sounds": [ {"name": "vehicle:block/boost_pad/boost"}]
+    },
+    "block.gas_pump.nozzle.pick_up": {
+        "sounds": [ {"name": "vehicle:block/gas_pump/nozzle/pick_up"}]
+    },
+    "block.gas_pump.nozzle.put_down": {
+        "sounds": [ {"name": "vehicle:block/gas_pump/nozzle/put_down"}]
+    },
+    "block.jack.head_down": {
+        "sounds": [ {"name": "vehicle:block/jack/head_down"}]
+    },
+    "block.jack.head_up": {
+        "sounds": [ {"name": "vehicle:block/jack/head_up"}]
+    },
+    "block.jack.air_wrench_gun": {
+        "sounds": [ {"name": "vehicle:block/jack/air_wrench_gun"}]
+    },
+    "block.vehicle_crate.panel_land": {
+        "sounds": [ {"name": "vehicle:block/vehicle_crate/panel_land"}]
+    },
+    "entity.atv.engine": {
+        "sounds": [ {"name": "vehicle:entity/atv/engine"}]
+    },
+    "entity.bumper_car.engine": {
+        "sounds": [ {"name": "vehicle:entity/bumper_car/engine"}]
+    },
+    "entity.bumper_car.bonk": {
+        "sounds": [ {"name": "vehicle:entity/bumper_car/bonk"}]
+    },
+    "entity.dirt_bike.engine": {
+        "sounds": [ {"name": "vehicle:entity/dirt_bike/engine"}]
+    },
+    "entity.quad_bike.engine": {
+        "sounds": [ {"name": "vehicle:entity/quad_bike/engine"}]
+    },
+    "entity.go_kart.engine": {
+        "sounds": [ {"name": "vehicle:entity/go_kart/engine"}]
+    },
+    "entity.mini_bus.engine": {
+        "sounds": [ {"name": "vehicle:entity/mini_bus/engine"}]
+    },
+    "entity.moped.engine": {
+        "sounds": [ {"name": "vehicle:entity/moped/engine"}]
+    },
+    "entity.speed_boat.engine": {
+        "sounds": [ {"name": "vehicle:entity/speed_boat/engine"}]
+    },
+    "entity.sports_plane.engine": {
+        "sounds": [ {"name": "vehicle:entity/sports_plane/engine"}]
+    },
+    "entity.tractor.engine": {
+        "sounds": [ {"name": "vehicle:entity/tractor/engine"}]
+    },
+    "entity.vehicle.destroyed": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/destroyed"}]
+    },
+    "entity.vehicle.helicopter_rotor": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/helicopter_rotor"}]
+    },
+    "entity.vehicle.horn": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/horn"}]
+    },
+    "entity.vehicle.impact": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/impact"}]
+    },
+    "entity.vehicle.pick_up": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/pick_up"}]
+    },
+    "entity.vehicle.thud": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/thud"}]
+    },
+    "entity.vehicle.fuel_port.large.open": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/fuel_port/large/open"}]
+    },
+    "entity.vehicle.fuel_port.large.close": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/fuel_port/large/close"}]
+    },
+    "entity.vehicle.fuel_port.small.open": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/fuel_port/small/open"}]
+    },
+    "entity.vehicle.fuel_port.small.close": {
+        "sounds": [ {"name": "vehicle:entity/vehicle/fuel_port/small/close"}]
+    },
+    "item.jerry_can.liquid_glug": {
+        "sounds": [ {"name": "vehicle:item/jerry_can/liquid_glug"}]
+    },
+    "item.spray_can.shake": {
+        "sounds": [ {"name": "vehicle:item/spray_can/shake"}]
+    },
+    "item.spray_can.spray": {
+        "sounds": [ {"name": "vehicle:item/spray_can/spray"}]
+    }
+}

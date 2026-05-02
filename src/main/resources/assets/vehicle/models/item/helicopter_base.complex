@@ -1,0 +1,56 @@
+{
+    "model": "vehicle:item/helicopter_base",
+    "children": [
+        {
+            "model": "vehicle:item/helicopter_joystick",
+            "transforms": [
+                {
+                    "type": "translate",
+                    "x": -7.5,
+                    "y": 4.0,
+                    "z": 13.5
+                }, {
+                    "type": "rotate",
+                    "x": {
+                        "source": "vehicle:helicopter_forwards",
+                        "scale": 10.0
+                    },
+                    "z": {
+                        "source": "vehicle:helicopter_sidewards",
+                        "inverse": true,
+                        "scale": 10.0
+                    }
+                }
+            ]
+        }, {
+            "model": "vehicle:item/helicopter_blades",
+            "transforms": [
+                {
+                    "type": "translate",
+                    "y": 37.0,
+                    "z": -9.0
+                }, {
+                    "type": "rotate",
+                    "y": {
+                        "source": "vehicle:helicopter_blades"
+                    }
+                }
+            ]
+        }, {
+            "model": "vehicle:item/helicopter_tail_rotor",
+            "transforms": [
+                {
+                    "type": "translate",
+                    "x": 3.0,
+                    "y": 24.5,
+                    "z": -81.5
+                }, {
+                    "type": "rotate",
+                    "x": {
+                        "source": "vehicle:helicopter_blades"
+                    }
+                }
+            ]
+        }
+    ]
+}

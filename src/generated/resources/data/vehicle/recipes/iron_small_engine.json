@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:furnace"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "P": {
+      "item": "vehicle:panel"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "PFP",
+    "IRI"
+  ],
+  "result": {
+    "item": "vehicle:iron_small_engine"
+  },
+  "show_notification": true
+}

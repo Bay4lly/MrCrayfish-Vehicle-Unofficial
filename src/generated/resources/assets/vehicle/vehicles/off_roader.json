@@ -1,0 +1,150 @@
+{
+  "axles": {
+    "lengthToFront": 14.5,
+    "lengthToRear": -14.5,
+    "offsetToGround": -1.0
+  },
+  "display": {
+    "gui": {
+      "translate": [
+        0.0,
+        0.0,
+        0.1
+      ]
+    },
+    "held": [
+      0.0,
+      3.5,
+      0.0
+    ]
+  },
+  "general": {
+    "canBeColored": true,
+    "canChangeWheels": true,
+    "engineType": "vehicle:large_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.4
+    },
+    "fuelPort": {
+      "rotation": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": 0.25,
+      "translate": [
+        -12.0,
+        8.5,
+        -6.5
+      ]
+    },
+    "keyPort": {
+      "rotation": [
+        -67.5,
+        0.0,
+        0.0
+      ],
+      "scale": 0.5,
+      "translate": [
+        0.0,
+        7.0,
+        6.2
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        5.0,
+        4.0,
+        -3.0
+      ]
+    },
+    {
+      "position": [
+        -5.0,
+        4.0,
+        -3.0
+      ]
+    },
+    {
+      "position": [
+        5.0,
+        11.5,
+        -14.5
+      ]
+    },
+    {
+      "position": [
+        -5.0,
+        3.5,
+        -18.9
+      ]
+    }
+  ],
+  "wheels": [
+    {
+      "offset": [
+        9.0,
+        0.0,
+        14.5
+      ],
+      "particles": true,
+      "position": "front",
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        9.0,
+        0.0,
+        14.5
+      ],
+      "particles": true,
+      "position": "front",
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ],
+      "side": "right"
+    },
+    {
+      "offset": [
+        9.0,
+        0.0,
+        -14.5
+      ],
+      "particles": true,
+      "position": "rear",
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ],
+      "side": "left"
+    },
+    {
+      "offset": [
+        9.0,
+        0.0,
+        -14.5
+      ],
+      "particles": true,
+      "position": "rear",
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ],
+      "side": "right"
+    }
+  ]
+}
