@@ -29,5 +29,6 @@ The mod also features a simple fuel production system, making it easy for beginn
 
 ## 📸 Screenshots
 
-![Screenshot #1](https://i.imgur.com/2HYPM5o.png)
-![Screenshot #2](https://i.imgur.com/XwtLs2F.png)
+![Screenshot #1](https://i.imgur.com/TZzbYSA.png)
+![Screenshot #2](https://i.imgur.com/EPwJa63.png)
+![Screenshot #3](https://i.imgur.com/j3DNCsV.png)
