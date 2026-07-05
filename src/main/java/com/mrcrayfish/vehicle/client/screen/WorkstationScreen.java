@@ -44,7 +44,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.joml.Quaternionf;
 
 import java.awt.*;
@@ -60,7 +60,7 @@ import java.util.stream.Stream;
  */
 public class WorkstationScreen extends AbstractContainerScreen<WorkstationContainer>
 {
-    private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/workstation.png");
+    private static final ResourceLocation GUI = ResourceLocation.parse("vehicle:textures/gui/workstation.png");
     private static CachedVehicle cachedVehicle;
     private static CachedVehicle prevCachedVehicle;
     private static int currentVehicle = 0;
@@ -88,16 +88,16 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         this.inventoryLabelY = this.imageHeight - 93;
         this.materials = new ArrayList<>();
         this.vehicleTypes = this.getVehicleTypes(playerInventory.player.level());
-        this.vehicleTypes.sort(Comparator.comparing(type -> ForgeRegistries.ENTITY_TYPES.getKey(type).getPath()));
+        this.vehicleTypes.sort(Comparator.comparing(type -> BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath()));
     }
 
     private List<EntityType<?>> getVehicleTypes(Level world)
     {
         return world.getRecipeManager().getRecipes().stream()
-                .filter(recipe -> recipe.getType() == ModRecipeTypes.WORKSTATION.get())
-                .map(recipe -> (WorkstationRecipe) recipe)
+                .filter(recipe -> recipe.value().getType() == ModRecipeTypes.WORKSTATION.get())
+                .map(recipe -> (WorkstationRecipe) recipe.value())
                 .map(WorkstationRecipe::getVehicle)
-                .filter(entityType -> !Config.SERVER.disabledVehicles.get().contains(Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(entityType)).toString())) // FIXME
+                .filter(entityType -> !Config.SERVER.disabledVehicles.get().contains(Objects.requireNonNull(BuiltInRegistries.ENTITY_TYPE.getKey(entityType)).toString())) // FIXME
                 .collect(Collectors.toList());
     }
 
@@ -117,9 +117,9 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         }).bounds(this.leftPos + 153, this.topPos + 18, 15, 20).build());
 
         this.btnCraft = this.addRenderableWidget(Button.builder(Component.translatable("gui.vehicle.craft"), button -> {
-            ResourceLocation registryName = ForgeRegistries.ENTITY_TYPES.getKey(this.vehicleTypes.get(currentVehicle));
+            ResourceLocation registryName = BuiltInRegistries.ENTITY_TYPE.getKey(this.vehicleTypes.get(currentVehicle));
             Objects.requireNonNull(registryName, "Vehicle registry name must not be null!");
-            PacketHandler.instance.sendToServer(new MessageCraftVehicle(registryName.toString(), this.workstation.getBlockPos()));
+            PacketHandler.sendToServer(new MessageCraftVehicle(registryName.toString(), this.workstation.getBlockPos()));
         }).bounds(this.leftPos + 172, this.topPos + 6, 97, 20).build());
 
         this.btnCraft.active = false;
@@ -277,7 +277,7 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
     @Override
     public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(matrixStack);
+        this.renderBackground(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderTooltip(matrixStack, mouseX, mouseY);
 
@@ -331,7 +331,7 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
     protected void renderBg(GuiGraphics matrixStack, float partialTicks, int mouseX, int mouseY)
     {
         /* Fixes partial ticks to use percentage from 0 to 1 */
-        partialTicks = this.minecraft.getFrameTime();
+        partialTicks = this.minecraft.getTimer().getGameTimeDeltaPartialTick(true);
 
         int startX = (this.width - this.imageWidth) / 2;
         int startY = (this.height - this.imageHeight) / 2;
@@ -395,12 +395,10 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
 
     private void drawVehicle(int x, int y, float partialTicks)
     {
-        RenderSystem.getModelViewStack().pushPose();
-        RenderSystem.getModelViewStack().translate((float) x, (float) y, 1050.0F);
-        RenderSystem.getModelViewStack().scale(-1.0F, -1.0F, -1.0F);
-        RenderSystem.applyModelViewMatrix();
-
         PoseStack matrixStack = new PoseStack();
+        matrixStack.pushPose();
+        matrixStack.translate((float) x, (float) y, 1050.0F);
+        matrixStack.scale(-1.0F, -1.0F, -1.0F);
         matrixStack.translate(0.0D, 0.0D, 1000.0D);
 
         float scale = this.prevVehicleScale + (this.vehicleScale - this.prevVehicleScale) * partialTicks;
@@ -431,9 +429,6 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         renderManager.setRenderShadow(true);
 
         matrixStack.popPose();
-
-        RenderSystem.getModelViewStack().popPose();
-        RenderSystem.applyModelViewMatrix();
 
         Lighting.setupFor3DItems();
     }

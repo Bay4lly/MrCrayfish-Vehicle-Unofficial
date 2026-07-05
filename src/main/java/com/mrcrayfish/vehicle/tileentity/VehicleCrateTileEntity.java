@@ -27,9 +27,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Collection;
 import java.util.Random;
@@ -69,6 +69,16 @@ public class VehicleCrateTileEntity extends TileEntitySynced
         return entityId;
     }
 
+    public void setEngineStack(ItemStack stack)
+    {
+        this.engineStack = stack;
+    }
+
+    public void setWheelStack(ItemStack stack)
+    {
+        this.wheelStack = stack;
+    }
+
     public void open(UUID opener)
     {
         if(this.entityId != null)
@@ -104,14 +114,14 @@ public class VehicleCrateTileEntity extends TileEntitySynced
             {
                 if(blockEntity.entityId != null && blockEntity.entity == null)
                 {
-                    EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(blockEntity.entityId);
+                    EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(blockEntity.entityId);
                     if(entityType != null)
                     {
                         blockEntity.entity = entityType.create(blockEntity.level);
                         if(blockEntity.entity != null)
                         {
                             VehicleHelper.playSound(SoundEvents.ITEM_BREAK, blockEntity.worldPosition, 1.0F, 0.5F);
-                            Collection<DataItem<?>> entryList = blockEntity.entity.getEntityData().itemsById.values();
+                            var entryList = java.util.Arrays.asList(blockEntity.entity.getEntityData().itemsById);
                             entryList.forEach(dataEntry -> blockEntity.entity.onSyncedDataUpdated(dataEntry.getAccessor()));
                             if(blockEntity.entity instanceof VehicleEntity)
                             {
@@ -147,7 +157,7 @@ public class VehicleCrateTileEntity extends TileEntitySynced
                 }
                 if(blockEntity.timer == 150)
                 {
-                    VehicleHelper.playSound(SoundEvents.GENERIC_EXPLODE, blockEntity.worldPosition, 1.0F, 1.0F);
+                    VehicleHelper.playSound(SoundEvents.GENERIC_EXPLODE.value(), blockEntity.worldPosition, 1.0F, 1.0F);
                     blockEntity.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, false, blockEntity.worldPosition.getX() + 0.5, blockEntity.worldPosition.getY() + 0.5, blockEntity.worldPosition.getZ() + 0.5, 0, 0, 0);
                 }
             }
@@ -155,7 +165,7 @@ public class VehicleCrateTileEntity extends TileEntitySynced
             {
                 BlockState state1 = blockEntity.level.getBlockState(blockEntity.worldPosition);
                 Direction facing = state1.getValue(VehicleCrateBlock.DIRECTION);
-                EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(blockEntity.entityId);
+                EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(blockEntity.entityId);
                 if(entityType != null)
                 {
                     Entity entity = entityType.create(blockEntity.level);
@@ -189,12 +199,12 @@ public class VehicleCrateTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("Vehicle", Tag.TAG_STRING))
         {
-            this.entityId = new ResourceLocation(compound.getString("Vehicle"));
+            this.entityId = ResourceLocation.parse(compound.getString("Vehicle"));
         }
         if(compound.contains("Color", Tag.TAG_INT))
         {
@@ -202,7 +212,7 @@ public class VehicleCrateTileEntity extends TileEntitySynced
         }
         if(compound.contains("EngineStack", Tag.TAG_COMPOUND))
         {
-            this.engineStack = ItemStack.of(compound.getCompound("EngineStack"));
+            this.engineStack = com.mrcrayfish.vehicle.util.CommonUtils.readItemStackFromTag(registries, compound, "EngineStack");
         }
         else if(compound.getBoolean("Creative"))
         {
@@ -212,7 +222,7 @@ public class VehicleCrateTileEntity extends TileEntitySynced
         }
         if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {
-            this.wheelStack = ItemStack.of(compound.getCompound("WheelStack"));
+            this.wheelStack = com.mrcrayfish.vehicle.util.CommonUtils.readItemStackFromTag(registries, compound, "WheelStack");
         }
         else
         {
@@ -229,9 +239,9 @@ public class VehicleCrateTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         if(this.entityId != null)
         {
             compound.putString("Vehicle", this.entityId.toString());
@@ -242,19 +252,14 @@ public class VehicleCrateTileEntity extends TileEntitySynced
         }
         if(!this.engineStack.isEmpty())
         {
-            CommonUtils.writeItemStackToTag(compound, "EngineStack", this.engineStack);
+            com.mrcrayfish.vehicle.util.CommonUtils.writeItemStackToTag(registries, compound, "EngineStack", this.engineStack);
         }
         if(!this.wheelStack.isEmpty())
         {
-            CommonUtils.writeItemStackToTag(compound, "WheelStack", this.wheelStack);
+            com.mrcrayfish.vehicle.util.CommonUtils.writeItemStackToTag(registries, compound, "WheelStack", this.wheelStack);
         }
         compound.putInt("Color", this.color);
         compound.putBoolean("Opened", this.opened);
     }
 
-    @Override
-    public AABB getRenderBoundingBox()
-    {
-        return INFINITE_EXTENT_AABB;
-    }
 }

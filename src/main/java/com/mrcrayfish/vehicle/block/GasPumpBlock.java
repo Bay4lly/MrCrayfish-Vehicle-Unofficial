@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -35,7 +36,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -48,6 +49,9 @@ import java.util.Map;
  */
 public class GasPumpBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends GasPumpBlock> codec() { return MapCodec.unit(this); }
     public static final BooleanProperty TOP = BooleanProperty.create("top");
     private static final Map<BlockState, VoxelShape> SHAPES = new HashMap<>();
 
@@ -92,7 +96,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(world.isClientSide())
         {
@@ -128,7 +132,7 @@ public class GasPumpBlock extends RotatedObjectBlock
                 return InteractionResult.SUCCESS;
             }
 
-            if(FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
+            if(FluidUtil.interactWithFluidHandler(playerEntity, net.minecraft.world.InteractionHand.MAIN_HAND, world, pos, result.getDirection()))
             {
                 return InteractionResult.CONSUME;
             }
@@ -149,7 +153,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player)
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player)
     {
         if (!world.isClientSide())
         {
@@ -163,7 +167,7 @@ public class GasPumpBlock extends RotatedObjectBlock
             }
         }
 
-        super.playerWillDestroy(world, pos, state, player);
+        return super.playerWillDestroy(world, pos, state, player);
     }
 
     @Override

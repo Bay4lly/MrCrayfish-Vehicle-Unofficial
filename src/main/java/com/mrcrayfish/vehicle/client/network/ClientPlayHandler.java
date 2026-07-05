@@ -14,10 +14,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import com.mrcrayfish.vehicle.entity.trailer.FluidTrailerEntity;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 /**
  * Author: MrCrayfish
@@ -35,7 +34,7 @@ public class ClientPlayHandler
         if(!(entity instanceof IStorage))
             return;
 
-        ((IStorage) entity).getInventory().fromTag(message.getCompound().getList("Inventory", Tag.TAG_COMPOUND));
+        ((IStorage) entity).getInventory().fromTag(message.getCompound().getList("Inventory", Tag.TAG_COMPOUND), world.registryAccess());
     }
 
     public static void handleEntityFluid(MessageEntityFluid message)
@@ -48,15 +47,10 @@ public class ClientPlayHandler
         if(entity == null)
             return;
 
-        LazyOptional<IFluidHandler> optional = entity.getCapability(ForgeCapabilities.FLUID_HANDLER);
-        optional.ifPresent(handler ->
+        if(entity instanceof FluidTrailerEntity fluidTrailer)
         {
-            if(handler instanceof FluidTank)
-            {
-                FluidTank tank = (FluidTank) handler;
-                tank.setFluid(message.getStack());
-            }
-        });
+            fluidTrailer.fluidHandler().setFluid(message.getStack());
+        }
     }
 
     public static void handleSyncPlayerSeat(MessageSyncPlayerSeat message)

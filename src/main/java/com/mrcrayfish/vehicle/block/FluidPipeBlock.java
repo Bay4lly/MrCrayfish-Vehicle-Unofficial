@@ -20,6 +20,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -32,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -47,6 +48,9 @@ import java.util.Set;
  */
 public class FluidPipeBlock extends ObjectEntityBlock
 {
+
+    @Override
+    public MapCodec<? extends FluidPipeBlock> codec() { return MapCodec.unit(this); }
     public static final BooleanProperty[] CONNECTED_PIPES = {BlockStateProperties.DOWN, BlockStateProperties.UP, BlockStateProperties.NORTH, BlockStateProperties.SOUTH, BlockStateProperties.WEST, BlockStateProperties.EAST};
     public static final BooleanProperty DISABLED = BooleanProperty.create("disabled");
 
@@ -110,10 +114,10 @@ public class FluidPipeBlock extends ObjectEntityBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult result)
     {
         PipeTileEntity pipe = getPipeTileEntity(world, pos);
-        Pair<AABB, Direction> hit = this.getConnectionBox(world, pos, state, player, hand, result.getDirection(), result.getLocation(), pipe);
+        Pair<AABB, Direction> hit = this.getConnectionBox(world, pos, state, player, net.minecraft.world.InteractionHand.MAIN_HAND, result.getDirection(), result.getLocation(), pipe);
         if(pipe != null && hit != null)
         {
             Direction direction = hit.getRight();
@@ -171,8 +175,7 @@ public class FluidPipeBlock extends ObjectEntityBlock
 
                     if(adjacentBlock != ModBlocks.FLUID_PIPE.get() && adjacentBlock != ModBlocks.FLUID_PUMP.get())
                     {
-                        BlockEntity adjacentTileEntity = world.getBlockEntity(adjacentPos);
-                        if(adjacentTileEntity == null || !adjacentTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, facing.getOpposite()).isPresent())
+                        if(world.getCapability(Capabilities.FluidHandler.BLOCK, adjacentPos, facing.getOpposite()) == null)
                         {
                             return null;
                         }
@@ -353,7 +356,7 @@ public class FluidPipeBlock extends ObjectEntityBlock
             }
             return !((PipeTileEntity) adjacentTileEntity).isConnectionDisabled(direction.getOpposite());
         }
-        else if(adjacentTileEntity != null && adjacentTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
+        else if(adjacentTileEntity != null && world instanceof net.minecraft.world.level.Level lvl && lvl.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, relativePos, null, adjacentTileEntity, direction.getOpposite()) != null)
         {
             return true;
         }

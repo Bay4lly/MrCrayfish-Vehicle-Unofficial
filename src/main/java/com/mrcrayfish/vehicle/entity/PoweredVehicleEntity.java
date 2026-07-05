@@ -54,15 +54,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -134,11 +133,14 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
 
     private FuelPortType fuelPortType;
     private boolean fueling;
+    protected float stepHeight = 1.0F;
+
+    @Override
+    public float maxUpStep() { return this.stepHeight; }
 
     protected PoweredVehicleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
-        this.setMaxUpStep(1.0F);
     }
 
     public PoweredVehicleEntity(EntityType<?> entityType, Level worldIn, double posX, double posY, double posZ)
@@ -148,26 +150,26 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     }
 
     @Override
-    public void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(CURRENT_SPEED, 0F);
-        this.entityData.define(MAX_SPEED, 10F);
-        this.entityData.define(ACCELERATION_SPEED, 0.5F);
-        this.entityData.define(POWER, 1.0F);
-        this.entityData.define(TURN_DIRECTION, TurnDirection.FORWARD.ordinal());
-        this.entityData.define(TARGET_TURN_ANGLE, 0F);
-        this.entityData.define(TURN_SENSITIVITY, 6);
-        this.entityData.define(MAX_TURN_ANGLE, 35);
-        this.entityData.define(ACCELERATION_DIRECTION, AccelerationDirection.NONE.ordinal());
-        this.entityData.define(HORN, false);
-        this.entityData.define(REQUIRES_FUEL, Config.SERVER.fuelEnabled.get());
-        this.entityData.define(CURRENT_FUEL, 0F);
-        this.entityData.define(FUEL_CAPACITY, 15000F);
-        this.entityData.define(NEEDS_KEY, false);
-        this.entityData.define(KEY_STACK, ItemStack.EMPTY);
-        this.entityData.define(ENGINE_STACK, ItemStack.EMPTY);
-        this.entityData.define(WHEEL_STACK, ItemStack.EMPTY);
+        super.defineSynchedData(builder);
+        builder.define(CURRENT_SPEED, 0F);
+        builder.define(MAX_SPEED, 10F);
+        builder.define(ACCELERATION_SPEED, 0.5F);
+        builder.define(POWER, 1.0F);
+        builder.define(TURN_DIRECTION, TurnDirection.FORWARD.ordinal());
+        builder.define(TARGET_TURN_ANGLE, 0F);
+        builder.define(TURN_SENSITIVITY, 6);
+        builder.define(MAX_TURN_ANGLE, 35);
+        builder.define(ACCELERATION_DIRECTION, AccelerationDirection.NONE.ordinal());
+        builder.define(HORN, false);
+        builder.define(REQUIRES_FUEL, Config.SERVER.fuelEnabled.get());
+        builder.define(CURRENT_FUEL, 0F);
+        builder.define(FUEL_CAPACITY, 15000F);
+        builder.define(NEEDS_KEY, false);
+        builder.define(KEY_STACK, ItemStack.EMPTY);
+        builder.define(ENGINE_STACK, ItemStack.EMPTY);
+        builder.define(WHEEL_STACK, ItemStack.EMPTY);
 
         List<Wheel> wheels = this.getProperties().getWheels();
         if(wheels != null && wheels.size() > 0)
@@ -246,7 +248,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             GasPumpTankTileEntity gasPumpTank = (GasPumpTankTileEntity) tileEntity;
             FluidTank tank = gasPumpTank.getFluidTank();
             FluidStack stack = tank.getFluid();
-            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(stack.getFluid()).toString())) // FIXME
+            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(BuiltInRegistries.FLUID.getKey(stack.getFluid()).toString())) // FIXME
                 return;
 
             stack = tank.drain(200, IFluidHandler.FluidAction.EXECUTE);
@@ -266,13 +268,13 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             return;
 
         JerryCanItem jerryCan = (JerryCanItem) stack.getItem();
-        Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
+        Optional<IFluidHandlerItem> optional = FluidUtil.getFluidHandler(stack);
         if(!optional.isPresent())
             return;
 
         IFluidHandlerItem handler = optional.get();
         FluidStack fluidStack = handler.getFluidInTank(0);
-        if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(fluidStack.getFluid()).toString())) // FIXME
+        if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(BuiltInRegistries.FLUID.getKey(fluidStack.getFluid()).toString())) // FIXME
             return;
 
         int transferAmount = Math.min(handler.getFluidInTank(0).getAmount(), jerryCan.getFillRate());
@@ -628,30 +630,30 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             if(power != this.getPower())
             {
                 this.setPower(power);
-                PacketHandler.instance.sendToServer(new MessagePower(power));
+                PacketHandler.sendToServer(new MessagePower(power));
             }
 
             AccelerationDirection acceleration = VehicleHelper.getAccelerationDirection(livingEntity);
             if(this.getAcceleration() != acceleration)
             {
                 this.setAcceleration(acceleration);
-                PacketHandler.instance.sendToServer(new MessageAccelerating(acceleration));
+                PacketHandler.sendToServer(new MessageAccelerating(acceleration));
             }
 
             boolean horn = VehicleHelper.isHonking();
             this.setHorn(horn);
-            PacketHandler.instance.sendToServer(new MessageHorn(horn));
+            PacketHandler.sendToServer(new MessageHorn(horn));
 
             TurnDirection direction = VehicleHelper.getTurnDirection(livingEntity);
             if(this.getTurnDirection() != direction)
             {
                 this.setTurnDirection(direction);
-                PacketHandler.instance.sendToServer(new MessageTurnDirection(direction));
+                PacketHandler.sendToServer(new MessageTurnDirection(direction));
             }
 
             float targetTurnAngle = VehicleHelper.getTargetTurnAngle(this, false);
             this.setTargetTurnAngle(targetTurnAngle);
-            PacketHandler.instance.sendToServer(new MessageTurnAngle(targetTurnAngle));
+            PacketHandler.sendToServer(new MessageTurnAngle(targetTurnAngle));
         }
 
         if(this.isBoosting() && this.getControllingPassenger() != null)
@@ -677,11 +679,11 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         }
         if(compound.contains("EngineStack", Tag.TAG_COMPOUND))
         {
-            this.setEngineStack(ItemStack.of(compound.getCompound("EngineStack")));
+            this.setEngineStack(ItemStack.parse(this.level().registryAccess(), compound.getCompound("EngineStack")).orElse(ItemStack.EMPTY));
         }
         if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {
-            this.setWheelStack(ItemStack.of(compound.getCompound("WheelStack")));
+            this.setWheelStack(ItemStack.parse(this.level().registryAccess(), compound.getCompound("WheelStack")).orElse(ItemStack.EMPTY));
         }
         if(compound.contains("MaxSpeed", Tag.TAG_FLOAT))
         {
@@ -701,7 +703,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         }
         if(compound.contains("StepHeight", Tag.TAG_FLOAT))
         {
-            this.setMaxUpStep(compound.getFloat("StepHeight"));
+            this.stepHeight = compound.getFloat("StepHeight");
         }
         if(compound.contains("RequiresFuel", Tag.TAG_BYTE))
         {
@@ -719,7 +721,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         {
             this.setKeyNeeded(compound.getBoolean("KeyNeeded"));
         }
-        this.setKeyStack(CommonUtils.readItemStackFromTag(compound, "KeyStack"));
+        this.setKeyStack(CommonUtils.readItemStackFromTag(this.level().registryAccess(), compound, "KeyStack"));
     }
 
     @Override
@@ -731,8 +733,8 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             compound.putUUID("Owner", this.owner);
         }
         compound.putBoolean("HasEngine", this.hasEngine());
-        CommonUtils.writeItemStackToTag(compound, "EngineStack", this.getEngineStack());
-        CommonUtils.writeItemStackToTag(compound, "WheelStack", this.getWheelStack());
+        CommonUtils.writeItemStackToTag(this.level().registryAccess(), compound, "EngineStack", this.getEngineStack());
+        CommonUtils.writeItemStackToTag(this.level().registryAccess(), compound, "WheelStack", this.getWheelStack());
         compound.putFloat("MaxSpeed", this.getMaxSpeed());
         compound.putFloat("AccelerationSpeed", this.getAccelerationSpeed());
         compound.putInt("TurnSensitivity", this.getTurnSensitivity());
@@ -742,7 +744,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         compound.putFloat("CurrentFuel", this.getCurrentFuel());
         compound.putFloat("FuelCapacity", this.getFuelCapacity());
         compound.putBoolean("KeyNeeded", this.isKeyNeeded());
-        CommonUtils.writeItemStackToTag(compound, "KeyStack", this.getKeyStack());
+        CommonUtils.writeItemStackToTag(this.level().registryAccess(), compound, "KeyStack", this.getKeyStack());
     }
 
     @Nullable
@@ -780,8 +782,8 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
                 {
                     Seat seat = properties.getSeats().get(seatIndex);
                     Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).multiply(-1, 1, 1).scale(0.0625).yRot(-(this.getModifiedRotationYaw() + 180) * 0.017453292F);
-                    //Vec3 seatVec = Vec3.ZERO;
-                    moveFunction.accept(passenger, this.getX() - seatVec.x, this.getY() + seatVec.y + passenger.getMyRidingOffset(), this.getZ() - seatVec.z);
+                    Vec3 attachmentPoint = passenger.getVehicleAttachmentPoint(this);
+                    moveFunction.accept(passenger, this.getX() - seatVec.x - attachmentPoint.x, this.getY() + seatVec.y - attachmentPoint.y + 0.25, this.getZ() - seatVec.z - attachmentPoint.z);
                     if(this.level().isClientSide() && VehicleHelper.canApplyVehicleYaw(passenger))
                     {
                         passenger.setYRot(passenger.getYRot() - this.deltaYaw);
@@ -1182,7 +1184,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     {
         if(player instanceof ServerPlayer)
         {
-            NetworkHooks.openScreen((ServerPlayer) player, this, buffer -> buffer.writeInt(this.getId()));
+            ((ServerPlayer) player).openMenu(this, buffer -> buffer.writeInt(this.getId()));
             /*ServerPlayer serverPlayer = (ServerPlayer) player;
             serverPlayer.getNextWindowId();
             serverPlayer.openContainer = new EditVehicleContainer(serverPlayer.currentWindowId, this.getVehicleInventory(), this, player, player.inventory);
@@ -1402,10 +1404,10 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             wheel = this.getWheelStack();
         }
 
-        ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(this.getType()); // FIXME
+        ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()); // FIXME
         if(entityId != null)
         {
-            return VehicleCrateBlock.create(entityId, this.getColor(), engine, wheel);
+            return VehicleCrateBlock.create(this.level().registryAccess(), entityId, this.getColor(), engine, wheel);
         }
         return ItemStack.EMPTY;
     }

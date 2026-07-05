@@ -9,8 +9,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,26 +52,23 @@ public class FluidNetworkHandler
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.LevelTickEvent event)
+    public void onServerTick(LevelTickEvent.Post event)
     {
         if(!this.dirty)
             return;
 
-        if(event.phase != TickEvent.Phase.END)
-            return;
-
-        Set<BlockPos> positions = this.pipeUpdateMap.remove(event.level.dimension());
+        Set<BlockPos> positions = this.pipeUpdateMap.remove(event.getLevel().dimension());
         if(positions != null)
         {
             positions.forEach(pos ->
             {
-                BlockEntity tileEntity = event.level.getBlockEntity(pos);
+                BlockEntity tileEntity = event.getLevel().getBlockEntity(pos);
                 if(tileEntity instanceof PipeTileEntity)
                 {
                     PipeTileEntity pipeTileEntity = (PipeTileEntity) tileEntity;
                     BlockState state = pipeTileEntity.getBlockState();
-                    boolean disabled = pipeTileEntity.getPumps().isEmpty() || event.level.hasNeighborSignal(pos);
-                    event.level.setBlock(pos, state.setValue(FluidPipeBlock.DISABLED, disabled), Block.UPDATE_CLIENTS | Block.UPDATE_IMMEDIATE);
+                    boolean disabled = pipeTileEntity.getPumps().isEmpty() || event.getLevel().hasNeighborSignal(pos);
+                    event.getLevel().setBlock(pos, state.setValue(FluidPipeBlock.DISABLED, disabled), Block.UPDATE_CLIENTS | Block.UPDATE_IMMEDIATE);
                 }
             });
         }
@@ -82,11 +80,8 @@ public class FluidNetworkHandler
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event)
+    public void onServerTick(ServerTickEvent.Post event)
     {
-        if(event.phase != TickEvent.Phase.END)
-            return;
-
         this.dirty = false;
     }
 }

@@ -1,15 +1,28 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.entity.HelicopterEntity;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent.Context;
 
-import java.util.function.Supplier;
 
 public class MessageTravelProperties implements IMessage<MessageTravelProperties>
 {
+    public static final CustomPacketPayload.Type<MessageTravelProperties> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "travel_properties"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageTravelProperties> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageTravelProperties().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
 	private float travelSpeed;
 	private float travelDirection;
 
@@ -22,24 +35,24 @@ public class MessageTravelProperties implements IMessage<MessageTravelProperties
 	}
 
 	@Override
-	public void encode(MessageTravelProperties message, FriendlyByteBuf buffer)
+	public void encode(MessageTravelProperties message, RegistryFriendlyByteBuf buffer)
 	{
 		buffer.writeFloat(message.travelSpeed);
 		buffer.writeFloat(message.travelDirection);
 	}
 
 	@Override
-	public MessageTravelProperties decode(FriendlyByteBuf buffer)
+	public MessageTravelProperties decode(RegistryFriendlyByteBuf buffer)
 	{
 		return new MessageTravelProperties(buffer.readFloat(), buffer.readFloat());
 	}
 
 	@Override
-	public void handle(MessageTravelProperties message, Supplier<Context> supplier)
+	public void handle(MessageTravelProperties message, IPayloadContext context)
 	{
-		supplier.get().enqueueWork(() ->
+		context.enqueueWork(() ->
 		{
-			ServerPlayer player = supplier.get().getSender();
+			ServerPlayer player = ((ServerPlayer) context.player());
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();
@@ -51,6 +64,5 @@ public class MessageTravelProperties implements IMessage<MessageTravelProperties
 				}
 			}
 		});
-		supplier.get().setPacketHandled(true);
 	}
 }

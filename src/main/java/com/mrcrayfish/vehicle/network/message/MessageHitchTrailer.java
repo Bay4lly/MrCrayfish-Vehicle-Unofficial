@@ -1,10 +1,16 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.entity.TrailerEntity;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.Entity;
@@ -12,16 +18,23 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
 {
+    public static final CustomPacketPayload.Type<MessageHitchTrailer> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "hitch_trailer"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageHitchTrailer> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageHitchTrailer().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
     private boolean hitch;
     private int vehicleId = -1;
 
@@ -39,24 +52,24 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
     }
 
     @Override
-    public void encode(MessageHitchTrailer message, FriendlyByteBuf buffer)
+    public void encode(MessageHitchTrailer message, RegistryFriendlyByteBuf buffer)
     {
         buffer.writeVarInt(message.vehicleId);
         buffer.writeBoolean(message.hitch);
     }
 
     @Override
-    public MessageHitchTrailer decode(FriendlyByteBuf buffer)
+    public MessageHitchTrailer decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageHitchTrailer(buffer.readVarInt(), buffer.readBoolean());
     }
 
     @Override
-    public void handle(MessageHitchTrailer message, Supplier<Context> supplier)
+    public void handle(MessageHitchTrailer message, IPayloadContext context)
     {
-        supplier.get().enqueueWork(() ->
+        context.enqueueWork(() ->
         {
-            ServerPlayer player = supplier.get().getSender();
+            ServerPlayer player = ((ServerPlayer) context.player());
                 if(player != null)
             {
                     Level world = player.level();
@@ -148,6 +161,5 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
                 }
             }
         });
-        supplier.get().setPacketHandled(true);
     }
 }

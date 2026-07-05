@@ -77,7 +77,7 @@ public class PlayerModelHandler
         double vehicleScale = properties.getBodyPosition().getScale();
         double playerScale = 32.0 / 30.0;
         double offsetX = -(seatVec.x * playerScale);
-        double offsetY = (seatVec.y + player.getMyRidingOffset()) * playerScale + 24 * 0.0625 - properties.getWheelOffset() * 0.0625 * vehicleScale;
+        double offsetY = (seatVec.y - player.getVehicleAttachmentPoint(vehicle).y + 0.25) * playerScale + 24 * 0.0625 - properties.getWheelOffset() * 0.0625 * vehicleScale;
         double offsetZ = (seatVec.z * playerScale) - properties.getRearAxelVec().z * 0.0625 * vehicleScale;
         matrixStack.translate(offsetX, offsetY, offsetZ);
         float wheelieProgress = Mth.lerp(partialTicks, landVehicle.prevWheelieCount, landVehicle.wheelieCount) / 4F;

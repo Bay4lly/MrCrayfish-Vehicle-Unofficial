@@ -17,12 +17,10 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.Unit;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.fml.ModList;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Author: MrCrayfish
@@ -41,44 +39,51 @@ public class ClientHandler
         if(ModList.get().isLoaded("controllable"))
         {
             ClientHandler.controllableLoaded = true;
-            MinecraftForge.EVENT_BUS.register(new ControllerHandler());
+            NeoForge.EVENT_BUS.register(new ControllerHandler());
         }
 
-        MinecraftForge.EVENT_BUS.register(EntityRayTracer.instance());
-        MinecraftForge.EVENT_BUS.register(new CameraHandler());
-        MinecraftForge.EVENT_BUS.register(new FuelingHandler());
-        MinecraftForge.EVENT_BUS.register(new HeldVehicleHandler());
-        MinecraftForge.EVENT_BUS.register(new InputHandler());
-        MinecraftForge.EVENT_BUS.register(new OverlayHandler());
-        MinecraftForge.EVENT_BUS.register(new PlayerModelHandler());
-        MinecraftForge.EVENT_BUS.register(new SprayCanHandler());
-        MinecraftForge.EVENT_BUS.register(new ClientEvents());
-        MinecraftForge.EVENT_BUS.register(new ModBlockEntityRenderers());
-        MinecraftForge.EVENT_BUS.register(new KeyBinds());
+        NeoForge.EVENT_BUS.register(EntityRayTracer.instance());
+        NeoForge.EVENT_BUS.register(new CameraHandler());
+        NeoForge.EVENT_BUS.register(new FuelingHandler());
+        NeoForge.EVENT_BUS.register(new HeldVehicleHandler());
+        NeoForge.EVENT_BUS.register(new InputHandler());
+        NeoForge.EVENT_BUS.register(new OverlayHandler());
+        NeoForge.EVENT_BUS.register(new SprayCanHandler());
+        NeoForge.EVENT_BUS.register(new ClientEvents());
+        // Moved to mod bus in VehicleMod
 
         setupCustomBlockModels();
         setupRenderLayers();
-        setupScreenFactories();
         setupItemColors();
 
-        ResourceManager manager = Minecraft.getInstance().getResourceManager();
-        if(manager instanceof ReloadableResourceManager)
+        NeoForge.EVENT_BUS.addListener(ClientHandler::onAddReloadListeners);
+    }
+
+    public static void onAddReloadListeners(AddReloadListenerEvent event)
+    {
+        event.addListener(new net.minecraft.server.packs.resources.SimplePreparableReloadListener<Void>()
         {
-            ((ReloadableResourceManager) manager).registerReloadListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
-                return stage.wait(Unit.INSTANCE).thenRun(() -> {
-                    FluidUtils.clearCacheFluidColor();
-                    EntityRayTracer.instance().clearDataForReregistration();
-                    SpecialModels.clearModelCache();
-                });
-            });
-        }
+            @Override
+            protected Void prepare(net.minecraft.server.packs.resources.ResourceManager manager, net.minecraft.util.profiling.ProfilerFiller profiler)
+            {
+                return null;
+            }
+
+            @Override
+            protected void apply(Void object, net.minecraft.server.packs.resources.ResourceManager manager, net.minecraft.util.profiling.ProfilerFiller profiler)
+            {
+                FluidUtils.clearCacheFluidColor();
+                EntityRayTracer.instance().clearDataForReregistration();
+                SpecialModels.clearModelCache();
+            }
+        });
     }
 
     private static void setupCustomBlockModels()
     {
         //TODO add custom loader
         //ModelLoaderRegistry.registerLoader(new CustomLoader());
-        //ModelLoaderRegistry.registerLoader(new ResourceLocation(Reference.MOD_ID, "ramp"), new CustomLoader());
+        //ModelLoaderRegistry.registerLoader(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "ramp"), new CustomLoader());
     }
 
     private static void setupRenderLayers()
@@ -91,27 +96,28 @@ public class ClientHandler
         ItemBlockRenderTypes.setRenderLayer(ModFluids.FLOWING_BLAZE_JUICE.get(), RenderType.translucent());
     }
 
-    private static void setupScreenFactories()
+    public static void setupScreenFactories(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event)
     {
-        MenuScreens.register(ModContainers.FLUID_EXTRACTOR.get(), FluidExtractorScreen::new);
-        MenuScreens.register(ModContainers.FLUID_MIXER.get(), FluidMixerScreen::new);
-        MenuScreens.register(ModContainers.EDIT_VEHICLE.get(), EditVehicleScreen::new);
-        MenuScreens.register(ModContainers.WORKSTATION.get(), WorkstationScreen::new);
-        MenuScreens.register(ModContainers.STORAGE.get(), StorageScreen::new);
+        event.register(ModContainers.FLUID_EXTRACTOR.get(), FluidExtractorScreen::new);
+        event.register(ModContainers.FLUID_MIXER.get(), FluidMixerScreen::new);
+        event.register(ModContainers.EDIT_VEHICLE.get(), EditVehicleScreen::new);
+        event.register(ModContainers.WORKSTATION.get(), WorkstationScreen::new);
+        event.register(ModContainers.STORAGE.get(), StorageScreen::new);
     }
 
     private static void setupItemColors()
     {
         ItemColor color = (stack, index) ->
         {
-            if(index == 0 && stack.hasTag() && stack.getTag().contains("Color", Tag.TAG_INT))
+            if(index == 0)
             {
-                return stack.getTag().getInt("Color");
+                Integer c = stack.get(com.mrcrayfish.vehicle.init.ModDataComponents.COLOR.get());
+                if(c != null) return c;
             }
             return 0xFFFFFF;
         };
 
-        ForgeRegistries.ITEMS.forEach(item ->
+        BuiltInRegistries.ITEM.forEach(item ->
         {
             if(item instanceof SprayCanItem || (item instanceof PartItem && ((PartItem) item).isColored()))
             {

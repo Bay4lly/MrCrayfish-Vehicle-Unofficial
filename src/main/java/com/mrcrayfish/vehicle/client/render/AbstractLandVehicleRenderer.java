@@ -209,12 +209,10 @@ public abstract class AbstractLandVehicleRenderer<T extends LandVehicleEntity & 
         float blue = (float) (color & 255) / 255.0F;
         RenderSystem.lineWidth(Math.max(2.0F, (float) Minecraft.getInstance().getWindow().getWidth() / 1920.0F * 2.0F));
         RenderSystem.enableDepthTest();
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
-        buffer.begin(Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(stack.last().pose(), 0, 0, 0).color(red, green, blue, 1.0F).endVertex();
-        buffer.vertex(stack.last().pose(), 0, 2, 0).color(red, green, blue, 1.0F).endVertex();
-        tessellator.end();
+        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(stack.last().pose(), 0, 0, 0).setColor(red, green, blue, 1.0F);
+        buffer.addVertex(stack.last().pose(), 0, 2, 0).setColor(red, green, blue, 1.0F);
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(buffer.buildOrThrow());
         RenderSystem.disableDepthTest();
     }
 

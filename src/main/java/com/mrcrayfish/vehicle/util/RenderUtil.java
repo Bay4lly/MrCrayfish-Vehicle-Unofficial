@@ -39,14 +39,12 @@ public class RenderUtil
      */
     public static void drawTexturedModalRect(double x, double y, int textureX, int textureY, double width, double height)
     {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuilder();
-        /*bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX);*/ // FIXME
-        bufferbuilder.vertex(x, y + height, 0).uv(((float) textureX * 0.00390625F), ((float) (textureY + height) * 0.00390625F)).endVertex();
-        bufferbuilder.vertex(x + width, y + height, 0).uv(((float) (textureX + width) * 0.00390625F), ((float) (textureY + height) * 0.00390625F)).endVertex();
-        bufferbuilder.vertex(x + width, y, 0).uv(((float) (textureX + width) * 0.00390625F), ((float) textureY * 0.00390625F)).endVertex();
-        bufferbuilder.vertex(x + 0, y, 0).uv(((float) textureX * 0.00390625F), ((float) textureY * 0.00390625F)).endVertex();
-        tessellator.end();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.addVertex((float)x, (float)(y + height), 0).setUv(textureX * 0.00390625F, (float)(textureY + height) * 0.00390625F);
+        bufferbuilder.addVertex((float)(x + width), (float)(y + height), 0).setUv((float)(textureX + width) * 0.00390625F, (float)(textureY + height) * 0.00390625F);
+        bufferbuilder.addVertex((float)(x + width), (float)y, 0).setUv((float)(textureX + width) * 0.00390625F, textureY * 0.00390625F);
+        bufferbuilder.addVertex((float)x, (float)y, 0).setUv(textureX * 0.00390625F, textureY * 0.00390625F);
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 
     /**
@@ -64,14 +62,12 @@ public class RenderUtil
         float alphaEnd = (float)(rightColor & 255) / 255.0F;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuilder();
-        bufferbuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex((double)right, (double)top, 0).color(greenEnd, blueEnd, alphaEnd, redEnd).endVertex();
-        bufferbuilder.vertex((double)left, (double)top, 0).color(greenStart, blueStart, alphaStart, redStart).endVertex();
-        bufferbuilder.vertex((double)left, (double)bottom, 0).color(greenStart, blueStart, alphaStart, redStart).endVertex();
-        bufferbuilder.vertex((double)right, (double)bottom, 0).color(greenEnd, blueEnd, alphaEnd, redEnd).endVertex();
-        tessellator.end();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.addVertex((float)right, (float)top, 0).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
+        bufferbuilder.addVertex((float)left, (float)top, 0).setColor(greenStart, blueStart, alphaStart, redStart);
+        bufferbuilder.addVertex((float)left, (float)bottom, 0).setColor(greenStart, blueStart, alphaStart, redStart);
+        bufferbuilder.addVertex((float)right, (float)bottom, 0).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
         RenderSystem.disableBlend();
     }
 
@@ -83,7 +79,7 @@ public class RenderUtil
     public static void renderColoredModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int color, int lightTexture, int overlayTexture)
     {
         matrixStack.pushPose();
-        net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+        net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
         matrixStack.translate(-0.5, -0.5, -0.5);
         if(!model.isCustomRenderer())
         {
@@ -96,13 +92,13 @@ public class RenderUtil
     public static void renderDamagedVehicleModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, int stage, int color, int lightTexture, int overlayTexture)
     {
         matrixStack.pushPose();
-        net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+        net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
         matrixStack.translate(-0.5, -0.5, -0.5);
         if(!model.isCustomRenderer())
         {
             Minecraft mc = Minecraft.getInstance();
             PoseStack.Pose entry = matrixStack.last();
-            VertexConsumer vertexBuilder = new SheetedDecalTextureGenerator(mc.renderBuffers().crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(stage)), entry.pose(), entry.normal(), 1); // FIXME
+            VertexConsumer vertexBuilder = new SheetedDecalTextureGenerator(mc.renderBuffers().crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(stage)), matrixStack.last(), 1.0F);
             renderModel(model, ItemStack.EMPTY, color, lightTexture, overlayTexture, matrixStack, vertexBuilder);
         }
         matrixStack.popPose();
@@ -117,10 +113,10 @@ public class RenderUtil
             boolean tridentFlag = isGui || transformType == ItemDisplayContext.GROUND || transformType == ItemDisplayContext.FIXED;
             if(stack.getItem() == Items.TRIDENT && tridentFlag)
             {
-                model = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(new ResourceLocation("minecraft:trident"), "inventory"));
+                model = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(ResourceLocation.parse("minecraft:trident"), "inventory"));
             }
 
-            model = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+            model = net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
             matrixStack.translate(-0.5, -0.5, -0.5);
             if(!model.isCustomRenderer() && (stack.getItem() != Items.TRIDENT || tridentFlag))
             {
@@ -175,7 +171,7 @@ public class RenderUtil
             float red = (float) (tintColor >> 16 & 255) / 255.0F;
             float green = (float) (tintColor >> 8 & 255) / 255.0F;
             float blue = (float) (tintColor & 255) / 255.0F;
-            vertexBuilder.putBulkData(entry, quad, new float[]{1, 1, 1, 1}, red, green, blue, new int[]{lightTexture, lightTexture, lightTexture, lightTexture}, overlayTexture, true);
+            vertexBuilder.putBulkData(entry, quad, 1.0f, red, green, blue, lightTexture, overlayTexture);
         }
     }
 

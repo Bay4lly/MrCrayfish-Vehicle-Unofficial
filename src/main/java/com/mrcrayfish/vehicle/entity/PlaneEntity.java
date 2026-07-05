@@ -45,11 +45,11 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    public void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(FLAP_DIRECTION, FlapDirection.NONE.ordinal());
-        this.entityData.define(LIFT, 0F);
+        super.defineSynchedData(builder);
+        builder.define(FLAP_DIRECTION, FlapDirection.NONE.ordinal());
+        builder.define(LIFT, 0F);
     }
 
     @Override
@@ -81,7 +81,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
             if(this.getFlapDirection() != flapDirection)
             {
                 this.setFlapDirection(flapDirection);
-                PacketHandler.instance.sendToServer(new MessageFlaps(flapDirection));
+                PacketHandler.sendToServer(new MessageFlaps(flapDirection));
             }
         }
 

@@ -14,8 +14,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * Author: MrCrayfish
@@ -39,10 +39,10 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     }
 
     @Override
-    public void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(DRIFTING, false);
+        super.defineSynchedData(builder);
+        builder.define(DRIFTING, false);
     }
 
     @Override
@@ -73,7 +73,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
             if(this.isDrifting() != drifting)
             {
                 this.setDrifting(drifting);
-                PacketHandler.instance.sendToServer(new MessageDrift(drifting));
+                PacketHandler.sendToServer(new MessageDrift(drifting));
             }
         }
     }

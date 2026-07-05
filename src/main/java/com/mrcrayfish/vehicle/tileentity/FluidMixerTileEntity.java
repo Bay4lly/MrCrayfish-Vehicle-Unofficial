@@ -29,18 +29,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderLookup;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -89,11 +87,11 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
                 case 5:
                     return tankFuelium.getFluidAmount();
                 case 6:
-                    return ForgeRegistries.FLUIDS.getKey(tankBlaze.getFluid().getFluid()).hashCode(); // FIXME
+                    return BuiltInRegistries.FLUID.getKey(tankBlaze.getFluid().getFluid()).hashCode(); // FIXME
                 case 7:
-                    return ForgeRegistries.FLUIDS.getKey(tankEnderSap.getFluid().getFluid()).hashCode(); // FIXME
+                    return BuiltInRegistries.FLUID.getKey(tankEnderSap.getFluid().getFluid()).hashCode(); // FIXME
                 case 8:
-                    return ForgeRegistries.FLUIDS.getKey(tankFuelium.getFluid().getFluid()).hashCode(); // FIXME
+                    return BuiltInRegistries.FLUID.getKey(tankFuelium.getFluid().getFluid()).hashCode(); // FIXME
             }
             return 0;
         }
@@ -112,19 +110,19 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
                     fuelMaxProgress = value;
                     break;
                 case 3:
-                    if(!tankBlaze.isEmpty() || tankBlaze.getFluid().getRawFluid() != Fluids.EMPTY)
+                    if(!tankBlaze.isEmpty() || tankBlaze.getFluid().getFluid() != Fluids.EMPTY)
                     {
                         tankBlaze.getFluid().setAmount(value);
                     }
                     break;
                 case 4:
-                    if(!tankEnderSap.isEmpty() || tankEnderSap.getFluid().getRawFluid() != Fluids.EMPTY)
+                    if(!tankEnderSap.isEmpty() || tankEnderSap.getFluid().getFluid() != Fluids.EMPTY)
                     {
                         tankEnderSap.getFluid().setAmount(value);
                     }
                     break;
                 case 5:
-                    if(!tankFuelium.isEmpty() || tankFuelium.getFluid().getRawFluid() != Fluids.EMPTY)
+                    if(!tankFuelium.isEmpty() || tankFuelium.getFluid().getFluid() != Fluids.EMPTY)
                     {
                         tankFuelium.getFluid().setAmount(value);
                     }
@@ -216,7 +214,7 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
     {
         if(index == 0)
         {
-            return ForgeHooks.getBurnTime(stack, null) > 0;
+            return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
         }
         else if(index == 1)
         {
@@ -295,9 +293,9 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
 
     private void updateFuel(ItemStack fuel)
     {
-        if(!fuel.isEmpty() && ForgeHooks.getBurnTime(fuel, null) > 0 && this.remainingFuel == 0 && this.canMix(this.currentRecipe))
+        if(!fuel.isEmpty() && fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0 && this.remainingFuel == 0 && this.canMix(this.currentRecipe))
         {
-            this.fuelMaxProgress = ForgeHooks.getBurnTime(fuel, null);
+            this.fuelMaxProgress = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);
             this.remainingFuel = this.fuelMaxProgress;
             this.shrinkItem(SLOT_FUEL);
         }
@@ -352,13 +350,13 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("Items", Tag.TAG_LIST))
         {
             this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(compound, this.inventory);
+            ContainerHelper.loadAllItems(compound, this.inventory, registries);
         }
         if(compound.contains("CustomName", Tag.TAG_STRING))
         {
@@ -367,20 +365,17 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
         if(compound.contains("TankBlaze", Tag.TAG_COMPOUND))
         {
             CompoundTag tagCompound = compound.getCompound("TankBlaze");
-            //FluidUtils.fixEmptyTag(tagCompound); //TODO might not need
-            this.tankBlaze.readFromNBT(tagCompound);
+            this.tankBlaze.readFromNBT(registries, tagCompound);
         }
         if(compound.contains("TankEnderSap", Tag.TAG_COMPOUND))
         {
             CompoundTag tagCompound = compound.getCompound("TankEnderSap");
-            //FluidUtils.fixEmptyTag(tagCompound);
-            this.tankEnderSap.readFromNBT(tagCompound);
+            this.tankEnderSap.readFromNBT(registries, tagCompound);
         }
         if(compound.contains("TankFuelium", Tag.TAG_COMPOUND))
         {
             CompoundTag tagCompound = compound.getCompound("TankFuelium");
-            //FluidUtils.fixEmptyTag(tagCompound);
-            this.tankFuelium.readFromNBT(tagCompound);
+            this.tankFuelium.readFromNBT(registries, tagCompound);
         }
         if(compound.contains("RemainingFuel", Tag.TAG_INT))
         {
@@ -397,18 +392,18 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
 
-        ContainerHelper.saveAllItems(compound, this.inventory);
+        ContainerHelper.saveAllItems(compound, this.inventory, registries);
 
         if(this.hasCustomName())
         {
             compound.putString("CustomName", this.customName);
         }
 
-        this.writeTanks(compound);
+        this.writeTanks(registries, compound);
 
         compound.putInt("RemainingFuel", this.remainingFuel);
         compound.putInt("FuelMaxProgress", this.fuelMaxProgress);
@@ -416,18 +411,18 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
     }
 
     @Override
-    public void writeTanks(CompoundTag compound)
+    public void writeTanks(HolderLookup.Provider registries, CompoundTag compound)
     {
         CompoundTag tagTankBlaze = new CompoundTag();
-        this.tankBlaze.writeToNBT(tagTankBlaze);
+        this.tankBlaze.writeToNBT(registries, tagTankBlaze);
         compound.put("TankBlaze", tagTankBlaze);
 
         CompoundTag tagTankEnderSap = new CompoundTag();
-        this.tankEnderSap.writeToNBT(tagTankEnderSap);
+        this.tankEnderSap.writeToNBT(registries, tagTankEnderSap);
         compound.put("TankEnderSap", tagTankEnderSap);
 
         CompoundTag tagTankFuelium = new CompoundTag();
-        this.tankFuelium.writeToNBT(tagTankFuelium);
+        this.tankFuelium.writeToNBT(registries, tagTankFuelium);
         compound.put("TankFuelium", tagTankFuelium);
     }
 
@@ -515,25 +510,30 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
 
     public void updateFluid(FluidTank tank, int fluidHash)
     {
-        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> ForgeRegistries.FLUIDS.getKey(fluid).hashCode() == fluidHash).findFirst(); // FIXME
+        Optional<Fluid> optional = BuiltInRegistries.FLUID.stream().filter(fluid -> BuiltInRegistries.FLUID.getKey(fluid).hashCode() == fluidHash).findFirst();
         optional.ifPresent(fluid -> tank.setFluid(new FluidStack(fluid, tank.getFluidAmount())));
     }
 
     public Optional<FluidMixerRecipe> getRecipe()
     {
-        return this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUID_MIXER.get(), this, this.level);
+        FluidMixerRecipe.FluidMixerInput input = new FluidMixerRecipe.FluidMixerInput(
+            this.getItem(SLOT_INGREDIENT),
+            this.tankEnderSap.getFluid().getFluid(),
+            this.tankBlaze.getFluid().getFluid()
+        );
+        return this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUID_MIXER.get(), input, this.level).map(net.minecraft.world.item.crafting.RecipeHolder::value);
     }
 
     private boolean isValidIngredient(ItemStack ingredient)
     {
-        List<FluidMixerRecipe> recipes = this.level.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == ModRecipeTypes.FLUID_MIXER.get()).map(recipe -> (FluidMixerRecipe) recipe).collect(Collectors.toList());
-        return recipes.stream().anyMatch(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, recipe.getIngredient()));
+        java.util.Collection<net.minecraft.world.item.crafting.RecipeHolder<FluidMixerRecipe>> recipes = this.level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FLUID_MIXER.get());
+        return recipes.stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).anyMatch(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, recipe.getIngredient()));
     }
 
     private boolean isValidFluid(FluidStack stack)
     {
-        List<FluidMixerRecipe> recipes = this.level.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == ModRecipeTypes.FLUID_MIXER.get()).map(recipe -> (FluidMixerRecipe) recipe).collect(Collectors.toList());
-        return recipes.stream().anyMatch(recipe ->
+        java.util.Collection<net.minecraft.world.item.crafting.RecipeHolder<FluidMixerRecipe>> recipes = this.level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FLUID_MIXER.get());
+        return recipes.stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).anyMatch(recipe ->
         {
             for(FluidEntry entry : recipe.getInputs())
             {
@@ -559,46 +559,6 @@ public class FluidMixerTileEntity extends TileEntitySynced implements Container,
     public FluidTank getFueliumTank()
     {
         return tankFuelium;
-    }
-
-    private final net.minecraftforge.common.util.LazyOptional<?> itemInteractionHandler = net.minecraftforge.common.util.LazyOptional.of(this::createUnSidedHandler);
-
-    @Nonnull
-    protected IItemHandler createUnSidedHandler()
-    {
-        return new InvWrapper(this);
-    }
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, Direction facing)
-    {
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            BlockState state = this.level.getBlockState(this.worldPosition);
-            if(state.getProperties().contains(RotatedObjectBlock.DIRECTION))
-            {
-                Direction direction = state.getValue(RotatedObjectBlock.DIRECTION);
-                if(facing == direction.getCounterClockWise())
-                {
-                    return LazyOptional.of(() -> this.tankBlaze).cast();
-                }
-                if(facing == direction)
-                {
-                    return LazyOptional.of(() -> this.tankEnderSap).cast();
-                }
-                if(facing == direction.getClockWise())
-                {
-                    return LazyOptional.of(() -> this.tankFuelium).cast();
-                }
-            }
-            return LazyOptional.empty();
-        }
-        else if(!this.remove && cap == ForgeCapabilities.ITEM_HANDLER)
-        {
-            return this.itemInteractionHandler.cast();
-        }
-        return super.getCapability(cap, facing);
     }
 
     private void setMixing(boolean state)

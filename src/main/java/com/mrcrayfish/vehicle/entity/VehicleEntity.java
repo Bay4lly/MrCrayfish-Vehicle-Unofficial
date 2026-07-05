@@ -45,18 +45,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 
 /**
  * Author: MrCrayfish
  */
-public abstract class VehicleEntity extends Entity implements IEntityAdditionalSpawnData, EntityRayTracer.IEntityRayTraceable
+public abstract class VehicleEntity extends Entity implements IEntityWithComplexSpawn, EntityRayTracer.IEntityRayTraceable
 {
     public static final int[] DYE_TO_COLOR = new int[] {16383998, 16351261, 13061821, 3847130, 16701501, 8439583, 15961002, 4673362, 10329495, 1481884, 8991416, 3949738, 8606770, 6192150, 11546150, 1908001};
 
@@ -86,13 +85,13 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        this.entityData.define(TIME_SINCE_HIT, 0);
-        this.entityData.define(MAX_HEALTH, 100F);
-        this.entityData.define(HEALTH, 100F);
-        this.entityData.define(COLOR, 16383998);
-        this.entityData.define(TRAILER, -1);
+        builder.define(TIME_SINCE_HIT, 0);
+        builder.define(MAX_HEALTH, 100F);
+        builder.define(HEALTH, 100F);
+        builder.define(COLOR, 16383998);
+        builder.define(TRAILER, -1);
 
         if(this.level().isClientSide)
         {
@@ -142,26 +141,23 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
             }
 
             ItemStack heldItem = player.getItemInHand(hand);
-            if(heldItem.getItem() instanceof SprayCanItem)
+            if(heldItem.getItem() instanceof SprayCanItem sprayCan)
             {
                 if(this.canBeColored())
                 {
-                    CompoundTag compound = heldItem.getTag();
+                    CompoundTag compound = SprayCanItem.getStackTag(heldItem);
                     if(compound != null)
                     {
-                        if(!compound.contains("RemainingSprays", Tag.TAG_INT))
-                        {
-                            compound.putInt("RemainingSprays", ModItems.SPRAY_CAN.get().getCapacity(heldItem));
-                        }
                         int remainingSprays = compound.getInt("RemainingSprays");
-                        if(compound.contains("Color", Tag.TAG_INT) && remainingSprays > 0)
+                        if(sprayCan.hasColor(heldItem) && remainingSprays > 0)
                         {
-                            int color = compound.getInt("Color");
+                            int color = sprayCan.getColor(heldItem);
                             if(this.getColor() != color)
                             {
-                                this.setColor(compound.getInt("Color"));
+                                this.setColor(color);
                                 player.level().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.ITEM_SPRAY_CAN_SPRAY.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
                                 compound.putInt("RemainingSprays", remainingSprays - 1);
+                                heldItem.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(compound));
                             }
                         }
                     }
@@ -172,7 +168,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
             {
                 if(this.getHealth() < this.getMaxHealth())
                 {
-                    heldItem.hurtAndBreak(1, player, playerEntity -> player.broadcastBreakEvent(hand));
+                    heldItem.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
                     this.setHealth(this.getHealth() + 5F);
                     this.level().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.ENTITY_VEHICLE_THUD.get(), SoundSource.PLAYERS, 1.0F, 0.8F + 0.4F * random.nextFloat());
                     player.swing(hand);
@@ -462,7 +458,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
 
 
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport)
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements)
     {
         this.lerpX = x;
         this.lerpY = y;
@@ -648,14 +644,14 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         buffer.writeFloat(this.getYRot());
         this.seatTracker.write(buffer);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         this.setYRot(this.yRotO = buffer.readFloat());
         this.seatTracker.read(buffer);
@@ -710,18 +706,12 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @Override
     public ItemStack getPickedResult(HitResult target)
     {
-        ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(this.getType());
+        ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType());
         if(entityId != null)
         {
-            return VehicleCrateBlock.create(entityId, this.getColor(), null, ItemStack.EMPTY);
+            return VehicleCrateBlock.create(this.level().registryAccess(), entityId, this.getColor(), null, ItemStack.EMPTY);
         }
         return ItemStack.EMPTY;
-    }
-
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     public SeatTracker getSeatTracker()
@@ -738,7 +728,6 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @Override
     public void positionRider(Entity passenger, MoveFunction moveFunction)
     {
-        super.positionRider(passenger, moveFunction);
         this.updatePassengerPosition(passenger, moveFunction);
     }
 
@@ -753,8 +742,9 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 if(seatIndex >= 0 && seatIndex < properties.getSeats().size())
                 {
                     Seat seat = properties.getSeats().get(seatIndex);
-                    Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).yRot(-this.getModifiedRotationYaw() * 0.017453292F - ((float) Math.PI / 2F));
-                    moveFunction.accept(passenger, this.getX() + seatVec.x, this.getY() + seatVec.y, this.getZ() + seatVec.z);
+                    Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale() * 0.0625).yRot(-this.getModifiedRotationYaw() * 0.017453292F - ((float) Math.PI / 2F));
+                    Vec3 attachmentPoint = passenger.getVehicleAttachmentPoint(this);
+                    moveFunction.accept(passenger, this.getX() + seatVec.x - attachmentPoint.x, this.getY() + seatVec.y - attachmentPoint.y + 0.25, this.getZ() + seatVec.z - attachmentPoint.z);
                     this.applyYawToEntity(passenger);
                 }
             }

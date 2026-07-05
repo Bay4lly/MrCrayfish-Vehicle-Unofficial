@@ -8,10 +8,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -21,23 +20,23 @@ import java.util.function.BiFunction;
  */
 public class VehicleUtil
 {
-    public static <T extends VehicleEntity> RegistryObject<EntityType<T>> createEntityType(DeferredRegister<EntityType<?>> deferredRegister, String name, BiFunction<EntityType<T>, Level, T> function, float width, float height)
+    public static <T extends VehicleEntity> DeferredHolder<EntityType<?>, EntityType<T>> createEntityType(DeferredRegister<EntityType<?>> deferredRegister, String name, BiFunction<EntityType<T>, Level, T> function, float width, float height)
     {
         return createEntityType(deferredRegister, name, function, width, height, true);
     }
 
-    public static <T extends VehicleEntity> RegistryObject<EntityType<T>> createEntityType(DeferredRegister<EntityType<?>> deferredRegister, String name, BiFunction<EntityType<T>, Level, T> function, float width, float height, boolean includeCrate)
+    public static <T extends VehicleEntity> DeferredHolder<EntityType<?>, EntityType<T>> createEntityType(DeferredRegister<EntityType<?>> deferredRegister, String name, BiFunction<EntityType<T>, Level, T> function, float width, float height, boolean includeCrate)
     {
-        String modId = ObfuscationReflectionHelper.getPrivateValue(DeferredRegister.class, deferredRegister, "modid");
-        ResourceLocation id = new ResourceLocation(modId, name);
-        RegistryObject<EntityType<T>> type = deferredRegister.register(name, () -> VehicleUtil.buildVehicleType(id, function, width, height));
-        VehicleRegistry.registerVehicleType((RegistryObject<EntityType<? extends VehicleEntity>>) (Object) type); // FIXME
+        String modId = deferredRegister.getNamespace();
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modId, name);
+        DeferredHolder<EntityType<?>, EntityType<T>> type = deferredRegister.register(name, () -> VehicleUtil.buildVehicleType(id, function, width, height));
+        VehicleRegistry.registerVehicleType((DeferredHolder<EntityType<?>, EntityType<? extends VehicleEntity>>) (Object) type); // FIXME
         if(includeCrate) VehicleCrateBlock.registerVehicle(id);
         return type;
     }
 
     @Nullable
-    public static <T extends VehicleEntity> RegistryObject<EntityType<T>> createModDependentEntityType(DeferredRegister<EntityType<?>> deferredRegister, String modId, String id, BiFunction<EntityType<T>, Level, T> function, float width, float height, boolean registerCrate)
+    public static <T extends VehicleEntity> DeferredHolder<EntityType<?>, EntityType<T>> createModDependentEntityType(DeferredRegister<EntityType<?>> deferredRegister, String modId, String id, BiFunction<EntityType<T>, Level, T> function, float width, float height, boolean registerCrate)
     {
         if(ModList.get().isLoaded(modId))
         {

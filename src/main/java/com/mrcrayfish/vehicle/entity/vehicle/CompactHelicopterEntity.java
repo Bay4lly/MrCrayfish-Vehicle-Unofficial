@@ -76,7 +76,7 @@ public class CompactHelicopterEntity extends HelicopterEntity
             Vec3 start = new Vec3(posX, this.getY() + 3.0, posZ);
             Vec3 end = start.subtract(0, downDistance, 0);
 
-            BlockHitResult result = this.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, null));
+            BlockHitResult result = this.level().clip(new net.minecraft.world.level.ClipContext(start, end, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY, net.minecraft.world.phys.shapes.CollisionContext.empty()));
             if(result.getType() != HitResult.Type.MISS)
             {
                 Vec3 loc = result.getLocation();

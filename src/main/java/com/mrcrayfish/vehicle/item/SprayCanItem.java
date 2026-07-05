@@ -27,7 +27,7 @@ public class SprayCanItem extends Item implements IDyeable
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
@@ -49,30 +49,25 @@ public class SprayCanItem extends Item implements IDyeable
 
     public static CompoundTag getStackTag(ItemStack stack)
     {
-        if (stack.getTag() == null)
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        CompoundTag compound = data.copyTag();
+        if (stack.getItem() instanceof SprayCanItem sprayCan)
         {
-            stack.setTag(new CompoundTag());
-        }
-        if (stack.getItem() instanceof SprayCanItem)
-        {
-            SprayCanItem sprayCan = (SprayCanItem) stack.getItem();
-            CompoundTag compound = stack.getTag();
-            if (compound != null)
+            if (!compound.contains("RemainingSprays", Tag.TAG_INT))
             {
-                if (!compound.contains("RemainingSprays", Tag.TAG_INT))
-                {
-                    compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
-                }
+                compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(compound));
             }
         }
-        return stack.getTag();
+        return compound;
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        CompoundTag compound = data.copyTag();
+        if (compound.contains("RemainingSprays", Tag.TAG_INT))
         {
             int remainingSprays = compound.getInt("RemainingSprays");
             return this.hasColor(stack) && remainingSprays < this.getCapacity(stack);
@@ -83,18 +78,20 @@ public class SprayCanItem extends Item implements IDyeable
     @Override
     public int getBarWidth(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        CompoundTag compound = data.copyTag();
+        if (compound.contains("RemainingSprays", Tag.TAG_INT))
         {
-            return Mth.clamp(1 - (compound.getInt("RemainingSprays") / this.getCapacity(stack)), 0, 1);
+            return Math.round(13.0F * (compound.getInt("RemainingSprays") / (float) this.getCapacity(stack)));
         }
         return 0;
     }
 
     public float getRemainingSprays(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        CompoundTag compound = data.copyTag();
+        if (compound.contains("RemainingSprays", Tag.TAG_INT))
         {
             return compound.getInt("RemainingSprays") / (float) this.getCapacity(stack);
         }
@@ -103,8 +100,9 @@ public class SprayCanItem extends Item implements IDyeable
 
     public int getCapacity(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("Capacity", Tag.TAG_INT))
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        CompoundTag compound = data.copyTag();
+        if (compound.contains("Capacity", Tag.TAG_INT))
         {
             return compound.getInt("Capacity");
         }
@@ -115,5 +113,6 @@ public class SprayCanItem extends Item implements IDyeable
     {
         CompoundTag compound = getStackTag(stack);
         compound.putInt("RemainingSprays", this.getCapacity(stack));
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(compound));
     }
 }

@@ -1,9 +1,11 @@
 pluginManagement {
     repositories {
-        maven { url "https://maven.minecraftforge.net" }
-        maven { url "https://maven.parchmentmc.org" }
         gradlePluginPortal()
     }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
 rootProject.name = "MrCrayfishVehicleMod"

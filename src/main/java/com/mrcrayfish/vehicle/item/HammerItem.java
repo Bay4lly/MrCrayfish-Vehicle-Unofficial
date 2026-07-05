@@ -17,11 +17,11 @@ public class HammerItem extends SwordItem
 {
     public HammerItem(Item.Properties properties)
     {
-        super(Tiers.WOOD, 3, -3.0F, properties);
+        super(Tiers.WOOD, properties.attributes(SwordItem.createAttributes(Tiers.WOOD, 3, -3.0F)));
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {

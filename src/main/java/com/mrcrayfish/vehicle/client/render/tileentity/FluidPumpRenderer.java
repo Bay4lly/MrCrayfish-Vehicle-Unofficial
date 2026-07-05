@@ -71,7 +71,7 @@ public class FluidPumpRenderer implements BlockEntityRenderer<PumpTileEntity>
         matrixStack.mulPose(this.renderer.camera.rotation());
         matrixStack.scale(-0.015F, -0.015F, 0.015F);
         Matrix4f matrix4f = matrixStack.last().pose();
-        Font fontRenderer = this.renderer.font;
+        Font fontRenderer = net.minecraft.client.Minecraft.getInstance().font;
         Component text = Component.translatable(tileEntity.getPowerMode().getKey());
         float x = (-fontRenderer.width(text) / 2.0F);
         // FIXME

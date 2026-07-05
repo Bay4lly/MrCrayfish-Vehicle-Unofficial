@@ -43,7 +43,7 @@ public class StorageInventory extends SimpleContainer implements MenuProvider
         return this.wrapper.getStorageContainerProvider().createMenu(windowId, playerInventory, playerEntity);
     }
 
-    public ListTag createTag()
+    public ListTag createTag(net.minecraft.core.HolderLookup.Provider registries)
     {
         ListTag tagList = new ListTag();
         for(int i = 0; i < this.getContainerSize(); i++)
@@ -53,15 +53,19 @@ public class StorageInventory extends SimpleContainer implements MenuProvider
             {
                 CompoundTag slotTag = new CompoundTag();
                 slotTag.putByte("Slot", (byte) i);
-                stack.save(slotTag);
+                stack.save(registries, slotTag);
                 tagList.add(slotTag);
             }
         }
         return tagList;
     }
 
-    @Override
-    public void fromTag(ListTag tagList)
+    public ListTag createTag()
+    {
+        return this.createTag(this.wrapper.getRegistries());
+    }
+
+    public void fromTag(ListTag tagList, net.minecraft.core.HolderLookup.Provider registries)
     {
         this.clearContent();
         for(int i = 0; i < tagList.size(); i++)
@@ -70,8 +74,13 @@ public class StorageInventory extends SimpleContainer implements MenuProvider
             byte slot = slotTag.getByte("Slot");
             if(slot >= 0 && slot < this.getContainerSize())
             {
-                this.setItem(slot, ItemStack.of(slotTag));
+                this.setItem(slot, ItemStack.parseOptional(registries, slotTag));
             }
         }
+    }
+
+    public void fromTag(ListTag tagList)
+    {
+        this.fromTag(tagList, this.wrapper.getRegistries());
     }
 }

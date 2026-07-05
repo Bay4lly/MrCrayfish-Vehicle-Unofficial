@@ -12,14 +12,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.loading.FMLLoader;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
 /**
  * Author: MrCrayfish
  */
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class VehicleProperties
 {
     private static final double WHEEL_RADIUS = 8.0;
@@ -201,9 +202,9 @@ public class VehicleProperties
 
     public static void loadProperties()
     {
-        for(RegistryObject<EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
+        for(DeferredHolder<EntityType<?>, EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
         {
-            ID_TO_PROPERTIES.computeIfAbsent(ForgeRegistries.ENTITY_TYPES.getKey(entityType.get()), VehicleProperties::loadProperties); // FIXME
+            ID_TO_PROPERTIES.computeIfAbsent(BuiltInRegistries.ENTITY_TYPE.getKey(entityType.get()), VehicleProperties::loadProperties); // FIXME
         }
     }
 
@@ -227,7 +228,7 @@ public class VehicleProperties
 
     public static VehicleProperties get(EntityType<?> entityType)
     {
-        return get(ForgeRegistries.ENTITY_TYPES.getKey(entityType));
+        return get(BuiltInRegistries.ENTITY_TYPE.getKey(entityType));
     }
 
     public static VehicleProperties get(ResourceLocation id)
@@ -256,9 +257,9 @@ public class VehicleProperties
 
         if(event.getKey() == GLFW.GLFW_KEY_RIGHT_BRACKET)
         {
-            for(RegistryObject<EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
+            for(DeferredHolder<EntityType<?>, EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
             {
-                ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entityType.get());
+                ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entityType.get());
                 ID_TO_PROPERTIES.put(id, loadProperties(id)); // FIXME
             }
         }
@@ -342,7 +343,7 @@ public class VehicleProperties
             String rawId = GsonHelper.getAsString(object, memberName, "");
             if(!rawId.isEmpty())
             {
-                ResourceLocation id = new ResourceLocation(rawId);
+                ResourceLocation id = ResourceLocation.parse(rawId);
                 IEngineType type = VehicleRegistry.getEngineTypeFromId(id);
                 return type != null ? type : defaultValue;
             }

@@ -1,0 +1,44 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="GNU General Public License 3.0"
+issueTrackerURL="https://github.com/MrCrayfish/MrCrayfishVehicleMod/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+updateJSONURL="https://mrcrayfish.com/modupdatejson?id=vehicle"
+displayURL="https://mrcrayfish.com/mods?id=vehicle"
+logoFile="vehicle_mod.png"
+credits="Phylogeny https://github.com/Phylogeny; Originally by MrCrayfish. Unofficial 1.21.1 NeoForge port by bay4lly"
+authors="MrCrayfish, bay4lly (unofficial 1.21.1 port)"
+description='''Unofficial 1.21.1 NeoForge port by bay4lly. Original mod by MrCrayfish. A mod that adds vehicles into Minecraft.'''
+
+# Access transformer (uses Mojang-mapped names on NeoForge)
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
+# Mixin configuration
+[[mixins]]
+config="vehicle.mixins.json"
+
+[[dependencies.vehicle]]
+    modId="neoforge"
+    type="required"
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.vehicle]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.vehicle]]
+    modId="framework"
+    type="required"
+    versionRange="${framework_version_range}"
+    ordering="AFTER"
+    side="BOTH"

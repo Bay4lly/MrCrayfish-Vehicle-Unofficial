@@ -14,18 +14,20 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.FluidHandlerBlockEntity;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import com.mrcrayfish.vehicle.tileentity.TileFluidHandlerSynced;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 /**
  * Author: MrCrayfish
  */
 public class CopyFluidTanks extends LootItemConditionalFunction
 {
-    private CopyFluidTanks(LootItemCondition[] conditionsIn)
+    public static final com.mojang.serialization.MapCodec<CopyFluidTanks> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec(instance ->
+        commonFields(instance).apply(instance, CopyFluidTanks::new)
+    );
+
+    private CopyFluidTanks(java.util.List<LootItemCondition> conditionsIn)
     {
         super(conditionsIn);
     }
@@ -40,36 +42,38 @@ public class CopyFluidTanks extends LootItemConditionalFunction
             if(tileEntity != null)
             {
                 CompoundTag tileEntityTag = new CompoundTag();
-                if(tileEntity instanceof FluidHandlerBlockEntity)
+                IFluidHandler handler = context.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, tileEntity.getBlockPos(), tileEntity.getBlockState(), tileEntity, null);
+                if(handler instanceof FluidTank)
                 {
-                    LazyOptional<IFluidHandler> handler = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER);
-                    handler.ifPresent(h ->
+                    FluidTank tank = (FluidTank) handler;
+                    if(!tank.isEmpty())
                     {
-                        FluidTank tank = (FluidTank) h;
-                        if(!tank.isEmpty())
-                        {
-                            tank.writeToNBT(tileEntityTag);
-                        }
-                    });
+                        tank.writeToNBT(context.getLevel().registryAccess(), tileEntityTag);
+                    }
+                }
+                else if(tileEntity instanceof TileFluidHandlerSynced)
+                {
+                    FluidTank tank = ((TileFluidHandlerSynced) tileEntity).getFluidTank();
+                    if(!tank.isEmpty())
+                    {
+                        tank.writeToNBT(context.getLevel().registryAccess(), tileEntityTag);
+                    }
                 }
                 else if(tileEntity instanceof IFluidTankWriter)
                 {
                     IFluidTankWriter writer = (IFluidTankWriter) tileEntity;
                     if(!writer.areTanksEmpty())
                     {
-                        writer.writeTanks(tileEntityTag);
+                        writer.writeTanks(context.getLevel().registryAccess(), tileEntityTag);
                     }
                 }
 
                 if(!tileEntityTag.isEmpty())
                 {
-                    CompoundTag compound = stack.getTag();
-                    if(compound == null)
-                    {
-                        compound = new CompoundTag();
-                    }
-                    compound.put("BlockEntityTag", tileEntityTag);
-                    stack.setTag(compound);
+                    net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                    CompoundTag compound = customData != null ? customData.copyTag() : new CompoundTag();
+                    compound.merge(tileEntityTag);
+                    stack.set(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.of(compound));
                 }
             }
         }
@@ -79,7 +83,7 @@ public class CopyFluidTanks extends LootItemConditionalFunction
     @Override
     public LootItemFunctionType getType()
     {
-        return ModLootFunctions.COPY_FLUID_TANKS;
+        return ModLootFunctions.COPY_FLUID_TANKS.get();
     }
 
     public static CopyFluidTanks.Builder copyFluidTanks()
@@ -99,15 +103,6 @@ public class CopyFluidTanks extends LootItemConditionalFunction
         public LootItemFunction build()
         {
             return new CopyFluidTanks(this.getConditions());
-        }
-    }
-
-    public static class Serializer extends LootItemConditionalFunction.Serializer<CopyFluidTanks>
-    {
-        @Override
-        public CopyFluidTanks deserialize(JsonObject object, JsonDeserializationContext deserializationContext, LootItemCondition[] conditionsIn)
-        {
-            return new CopyFluidTanks(conditionsIn);
         }
     }
 }

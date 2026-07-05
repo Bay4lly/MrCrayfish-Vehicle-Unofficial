@@ -1,40 +1,52 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.common.SeatTracker;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageCycleSeats implements IMessage<MessageCycleSeats>
 {
+    public static final CustomPacketPayload.Type<MessageCycleSeats> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "cycle_seats"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageCycleSeats> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageCycleSeats().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
     public MessageCycleSeats() {}
 
     @Override
-    public void encode(MessageCycleSeats message, FriendlyByteBuf buffer) {}
+    public void encode(MessageCycleSeats message, RegistryFriendlyByteBuf buffer) {}
 
     @Override
-    public MessageCycleSeats decode(FriendlyByteBuf buffer)
+    public MessageCycleSeats decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageCycleSeats();
     }
 
     @Override
-    public void handle(MessageCycleSeats message, Supplier<Context> supplier)
+    public void handle(MessageCycleSeats message, IPayloadContext context)
     {
-        if(supplier.get().getDirection() == NetworkDirection.PLAY_TO_SERVER)
+        if(context.flow().isServerbound())
         {
-            supplier.get().enqueueWork(() ->
+            context.enqueueWork(() ->
             {
-                ServerPlayer player = supplier.get().getSender();
+                ServerPlayer player = ((ServerPlayer) context.player());
                 if(player != null && player.getVehicle() instanceof VehicleEntity)
                 {
                     VehicleEntity vehicle = (VehicleEntity) player.getVehicle();
@@ -57,7 +69,6 @@ public class MessageCycleSeats implements IMessage<MessageCycleSeats>
                     }
                 }
             });
-            supplier.get().setPacketHandled(true);
         }
     }
 }

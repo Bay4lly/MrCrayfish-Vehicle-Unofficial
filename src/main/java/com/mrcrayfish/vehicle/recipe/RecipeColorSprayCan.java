@@ -3,16 +3,15 @@ package com.mrcrayfish.vehicle.recipe;
 import com.google.common.collect.Lists;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import com.mrcrayfish.vehicle.item.IDyeable;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.List;
 
@@ -21,20 +20,20 @@ import java.util.List;
  */
 public class RecipeColorSprayCan extends CustomRecipe
 {
-    public RecipeColorSprayCan(ResourceLocation id, CraftingBookCategory category)
+    public RecipeColorSprayCan(CraftingBookCategory category)
     {
-        super(id, category);
+        super(category);
     }
 
     @Override
-    public boolean matches(CraftingContainer inventory, Level worldIn)
+    public boolean matches(CraftingInput input, Level worldIn)
     {
         ItemStack dyeableItem = ItemStack.EMPTY;
         List<ItemStack> dyes = Lists.newArrayList();
 
-        for(int i = 0; i < inventory.getContainerSize(); ++i)
+        for(int i = 0; i < input.size(); ++i)
         {
-            ItemStack stack = inventory.getItem(i);
+            ItemStack stack = input.getItem(i);
             if(!stack.isEmpty())
             {
                 if(stack.getItem() instanceof IDyeable)
@@ -60,14 +59,14 @@ public class RecipeColorSprayCan extends CustomRecipe
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer inventory, RegistryAccess registries)
+    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries)
     {
         ItemStack dyeableItem = ItemStack.EMPTY;
         List<DyeItem> dyes = Lists.newArrayList();
 
-        for(int i = 0; i < inventory.getContainerSize(); ++i)
+        for(int i = 0; i < input.size(); ++i)
         {
-            ItemStack stack = inventory.getItem(i);
+            ItemStack stack = input.getItem(i);
             if(!stack.isEmpty())
             {
                 if(stack.getItem() instanceof IDyeable)

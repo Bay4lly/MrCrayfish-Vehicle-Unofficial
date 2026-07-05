@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -47,7 +47,7 @@ public class BathModel extends AbstractPlaneRenderer<BathEntity>
             Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).scale(0.0625);
             double scale = 32.0 / 30.0;
             double offsetX = seatVec.x * scale;
-            double offsetY = (seatVec.y + player.getMyRidingOffset() - 0.5) * scale + 24 * 0.0625; //Player is 2 blocks high tall but renders at 1.8 blocks tall
+            double offsetY = (seatVec.y - player.getVehicleAttachmentPoint(entity).y + 0.25 - 0.5) * scale + 24 * 0.0625; //Player is 2 blocks high tall but renders at 1.8 blocks tall
             double offsetZ = seatVec.z * scale;
             matrixStack.translate(offsetX, offsetY, offsetZ);
             float bodyPitch = entity.prevBodyRotationX + (entity.bodyRotationX - entity.prevBodyRotationX) * partialTicks;
@@ -79,7 +79,7 @@ public class BathModel extends AbstractPlaneRenderer<BathEntity>
     {
         return (tracer, transforms, parts) ->
         {
-            EntityRayTracer.createTransformListForPart(ForgeRegistries.ITEMS.getValue(new ResourceLocation("cfm:bath")), parts, transforms,
+            EntityRayTracer.createTransformListForPart(BuiltInRegistries.ITEM.get(ResourceLocation.parse("cfm:bath")), parts, transforms,
                     EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_Y, 90F));
         };
     }

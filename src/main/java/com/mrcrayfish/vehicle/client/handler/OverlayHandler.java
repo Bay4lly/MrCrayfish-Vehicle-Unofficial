@@ -6,8 +6,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -19,8 +20,11 @@ import java.text.DecimalFormat;
 public class OverlayHandler
 {
     @SubscribeEvent
-    public void onRenderTick(RenderGuiOverlayEvent.Post event) // FIXME RenderGuiOverlayEvent vs RenderGuiEvent
+    public void onRenderTick(RenderGuiLayerEvent.Post event)
     {
+        if(!event.getName().equals(VanillaGuiLayers.HOTBAR))
+            return;
+
         if(!Config.CLIENT.enabledSpeedometer.get())
             return;
 

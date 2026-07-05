@@ -15,11 +15,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Optional;
 
@@ -59,12 +59,12 @@ public interface RayTraceFunction
             GasPumpTankTileEntity gasPumpTank = (GasPumpTankTileEntity) tileEntity;
             FluidTank tank = gasPumpTank.getFluidTank();
             FluidStack stack = tank.getFluid();
-            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(stack.getFluid()).toString())) // FIXME
+            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(BuiltInRegistries.FLUID.getKey(stack.getFluid()).toString())) // FIXME
                 break gasPump;
 
             if(rayTracer.getContinuousInteractionTickCounter() % 2 == 0)
             {
-                PacketHandler.instance.sendToServer(new MessageFuelVehicle(result.getEntity().getId(), InteractionHand.MAIN_HAND));
+                PacketHandler.sendToServer(new MessageFuelVehicle(result.getEntity().getId(), InteractionHand.MAIN_HAND));
             }
             return InteractionHand.MAIN_HAND;
         }
@@ -75,18 +75,18 @@ public interface RayTraceFunction
             if(stack.isEmpty() || !(stack.getItem() instanceof JerryCanItem) || !ControllerHandler.isRightClicking())
                 continue;
 
-            Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
+            Optional<IFluidHandlerItem> optional = FluidUtil.getFluidHandler(stack);
             if(!optional.isPresent())
                 continue;
 
             IFluidHandlerItem handler = optional.get();
             FluidStack fluidStack = handler.getFluidInTank(0);
-            if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(fluidStack.getFluid()).toString())) // FIXME
+            if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(BuiltInRegistries.FLUID.getKey(fluidStack.getFluid()).toString())) // FIXME
                 continue;
 
             if(rayTracer.getContinuousInteractionTickCounter() % 2 == 0)
             {
-                PacketHandler.instance.sendToServer(new MessageFuelVehicle(entity.getId(), hand));
+                PacketHandler.sendToServer(new MessageFuelVehicle(entity.getId(), hand));
             }
             return hand;
         }
@@ -100,13 +100,13 @@ public interface RayTraceFunction
             // If it's not a jerry can but is a fluid container, trigger progressive fill
             if(!(stack.getItem() instanceof JerryCanItem))
             {
-                Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
+                Optional<IFluidHandlerItem> optional = FluidUtil.getFluidHandler(stack);
                 if(!optional.isPresent())
                     continue;
 
                 if(rayTracer.getContinuousInteractionTickCounter() % 2 == 0)
                 {
-                    PacketHandler.instance.sendToServer(new com.mrcrayfish.vehicle.network.message.MessageFuelItem(hand));
+                    PacketHandler.sendToServer(new com.mrcrayfish.vehicle.network.message.MessageFuelItem(hand));
                 }
                 return hand;
             }

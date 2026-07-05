@@ -5,8 +5,8 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageCycleSeats;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -28,7 +28,7 @@ public class InputHandler
         {
             if(minecraft.player.getVehicle() instanceof VehicleEntity)
             {
-                PacketHandler.instance.sendToServer(new MessageCycleSeats());
+                PacketHandler.sendToServer(new MessageCycleSeats());
             }
         }
     }

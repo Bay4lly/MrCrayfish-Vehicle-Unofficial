@@ -11,13 +11,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 /**
  * Author: MrCrayfish
  */
-public class EntityJack extends Entity implements IEntityAdditionalSpawnData
+public class EntityJack extends Entity implements IEntityWithComplexSpawn
 {
     private double initialX;
     private double initialY;
@@ -43,7 +42,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder)
     {
 
     }
@@ -102,12 +101,6 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
-    @Override
     public void positionRider(Entity passenger, MoveFunction moveFunction)
     {
         if(passenger instanceof VehicleEntity)
@@ -135,7 +128,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         buffer.writeDouble(this.initialX);
         buffer.writeDouble(this.initialY);
@@ -143,7 +136,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         this.initialX = buffer.readDouble();
         this.initialY = buffer.readDouble();

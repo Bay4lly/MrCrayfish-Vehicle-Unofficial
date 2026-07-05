@@ -2,27 +2,26 @@ package com.mrcrayfish.vehicle.init;
 
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.world.storage.loot.functions.CopyFluidTanks;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction.Serializer;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * Author: MrCrayfish
  */
 public class ModLootFunctions
 {
-    public static final LootItemFunctionType COPY_FLUID_TANKS = register("copy_fluid_tanks", new CopyFluidTanks.Serializer());
+    private static final DeferredRegister<LootItemFunctionType<?>> REGISTER =
+        DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, Reference.MOD_ID);
 
-    // Load class
-    public static void init()
-    {
-    }
+    public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<CopyFluidTanks>> COPY_FLUID_TANKS =
+        REGISTER.register("copy_fluid_tanks", () -> new LootItemFunctionType<>(CopyFluidTanks.CODEC));
 
-    private static LootItemFunctionType register(String id, Serializer<? extends LootItemFunction> serializer)
+    public static void init(IEventBus modBus)
     {
-        return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, new ResourceLocation(Reference.MOD_ID, id), new LootItemFunctionType(serializer));
+        REGISTER.register(modBus);
     }
 }

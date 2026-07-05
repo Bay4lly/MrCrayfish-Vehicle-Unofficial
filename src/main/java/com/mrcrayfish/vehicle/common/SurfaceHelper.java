@@ -9,7 +9,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +23,11 @@ public class SurfaceHelper
 {
     public static SurfaceType getSurfaceTypeForMaterial(BlockState state)
     {
-        if (state.is(BlockTags.DIRT) || state.is(Tags.Blocks.GRAVEL) || state.is(BlockTags.SAND) || state.is(BlockTags.WOOL) || state.is(Blocks.SPONGE))
+        if (state.is(BlockTags.DIRT) || state.is(net.neoforged.neoforge.common.Tags.Blocks.GRAVELS) || state.is(BlockTags.SAND) || state.is(BlockTags.WOOL) || state.is(Blocks.SPONGE))
         {
             return SurfaceType.DIRT;
         }
-        else if (state.isSolid() || state.is(Tags.Blocks.STONE) || state.is(BlockTags.SHULKER_BOXES) || state.is(Tags.Blocks.GLASS))
+        else if (state.isSolid() || state.is(net.minecraft.tags.BlockTags.STONE_ORE_REPLACEABLES) || state.is(BlockTags.SHULKER_BOXES) || state.is(net.neoforged.neoforge.common.Tags.Blocks.GLASS_BLOCKS))
         {
             return SurfaceType.SOLID;
         }

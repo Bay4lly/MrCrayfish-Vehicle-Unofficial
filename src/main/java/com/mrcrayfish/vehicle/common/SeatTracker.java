@@ -11,7 +11,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -56,7 +56,7 @@ public class SeatTracker
         VehicleEntity vehicle = this.vehicleRef.get();
         if(vehicle != null && !vehicle.level().isClientSide)
         {
-            PacketHandler.instance.send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncPlayerSeat(vehicle.getId(), index, uuid));
+            PacketHandler.sendToTrackingEntity(vehicle, new MessageSyncPlayerSeat(vehicle.getId(), index, uuid));
         }
     }
 

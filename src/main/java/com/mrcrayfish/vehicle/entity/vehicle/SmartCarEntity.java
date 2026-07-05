@@ -15,7 +15,7 @@ public class SmartCarEntity extends LandVehicleEntity
     {
         super(type, worldIn);
         this.setMaxSpeed(15F);
-        this.setMaxUpStep(1F);
+        this.stepHeight = 1F;
     }
 
     @Override

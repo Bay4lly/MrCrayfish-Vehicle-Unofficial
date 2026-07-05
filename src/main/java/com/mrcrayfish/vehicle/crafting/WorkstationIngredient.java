@@ -2,7 +2,6 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
@@ -10,32 +9,41 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.crafting.IIngredientSerializer;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Stream;
 
 /**
  * Author: MrCrayfish
  */
-public class WorkstationIngredient extends Ingredient
+public class WorkstationIngredient
 {
-    private final Ingredient.Value itemList;
+    public static final com.mojang.serialization.Codec<WorkstationIngredient> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
+        net.minecraft.world.item.crafting.Ingredient.CODEC.fieldOf("ingredient").forGetter(WorkstationIngredient::getIngredient),
+        com.mojang.serialization.Codec.INT.fieldOf("count").forGetter(WorkstationIngredient::getCount)
+    ).apply(instance, WorkstationIngredient::new));
+
+    public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, WorkstationIngredient> STREAM_CODEC = net.minecraft.network.codec.StreamCodec.of(
+        (buf, ingredient) -> {
+            net.minecraft.world.item.crafting.Ingredient.CONTENTS_STREAM_CODEC.encode(buf, ingredient.getIngredient());
+            buf.writeVarInt(ingredient.getCount());
+        },
+        buf -> {
+            net.minecraft.world.item.crafting.Ingredient ingredient = net.minecraft.world.item.crafting.Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+            int count = buf.readVarInt();
+            return new WorkstationIngredient(ingredient, count);
+        }
+    );
+
+    private final Ingredient ingredient;
     private final int count;
 
-    protected WorkstationIngredient(Stream<? extends Ingredient.Value> itemList, int count)
+    public WorkstationIngredient(Ingredient ingredient, int count)
     {
-        super(itemList);
-        this.itemList = null;
+        this.ingredient = ingredient;
         this.count = count;
     }
 
-    private WorkstationIngredient(Ingredient.Value itemList, int count)
+    public Ingredient getIngredient()
     {
-        super(Stream.of(itemList));
-        this.itemList = itemList;
-        this.count = count;
+        return this.ingredient;
     }
 
     public int getCount()
@@ -43,106 +51,53 @@ public class WorkstationIngredient extends Ingredient
         return this.count;
     }
 
-    @Override
-    public IIngredientSerializer<? extends Ingredient> getSerializer()
+    public boolean test(ItemStack stack)
     {
-        return Serializer.INSTANCE;
+        return this.ingredient.test(stack);
+    }
+
+    public ItemStack[] getItems()
+    {
+        return this.ingredient.getItems();
+    }
+
+    public boolean isEmpty()
+    {
+        return this.ingredient.isEmpty();
     }
 
     public static WorkstationIngredient fromJson(JsonObject object)
     {
-        Ingredient.Value value = valueFromJson(object);
+        Ingredient ingredient = net.minecraft.world.item.crafting.Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, object.get("ingredient")).getOrThrow();
         int count = GsonHelper.getAsInt(object, "count", 1);
-        return new WorkstationIngredient(Stream.of(value), count);
+        return new WorkstationIngredient(ingredient, count);
     }
 
-    @Override
     public JsonElement toJson()
     {
-        JsonObject object = this.itemList.serialize();
+        JsonObject object = new JsonObject();
+        object.add("ingredient", net.minecraft.world.item.crafting.Ingredient.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, this.ingredient).getOrThrow());
         object.addProperty("count", this.count);
         return object;
     }
 
     public static WorkstationIngredient of(ItemLike provider, int count)
     {
-        return new WorkstationIngredient(new Ingredient.ItemValue(new ItemStack(provider)), count);
+        return new WorkstationIngredient(Ingredient.of(provider), count);
     }
 
     public static WorkstationIngredient of(ItemStack stack, int count)
     {
-        return new WorkstationIngredient(new Ingredient.ItemValue(stack), count);
+        return new WorkstationIngredient(Ingredient.of(stack), count);
     }
 
     public static WorkstationIngredient of(TagKey<Item> tag, int count)
     {
-        return new WorkstationIngredient(new Ingredient.TagValue(tag), count);
+        return new WorkstationIngredient(Ingredient.of(tag), count);
     }
 
     public static WorkstationIngredient of(ResourceLocation id, int count)
     {
-        return new WorkstationIngredient(new MissingSingleItemList(id), count);
-    }
-
-    public static class Serializer implements IIngredientSerializer<WorkstationIngredient>
-    {
-        public static final WorkstationIngredient.Serializer INSTANCE = new WorkstationIngredient.Serializer();
-
-        @Override
-        public WorkstationIngredient parse(FriendlyByteBuf buffer)
-        {
-            int itemCount = buffer.readVarInt();
-            int count = buffer.readVarInt();
-            Stream<Ingredient.ItemValue> values = Stream.generate(() ->
-                    new ItemValue(buffer.readItem())).limit(itemCount);
-            return new WorkstationIngredient(values, count);
-        }
-
-        @Override
-        public WorkstationIngredient parse(JsonObject object)
-        {
-            return WorkstationIngredient.fromJson(object);
-        }
-
-        @Override
-        public void write(FriendlyByteBuf buffer, WorkstationIngredient ingredient)
-        {
-            buffer.writeVarInt(ingredient.getItems().length);
-            buffer.writeVarInt(ingredient.count);
-            for(ItemStack stack : ingredient.getItems())
-            {
-                buffer.writeItem(stack);
-            }
-        }
-    }
-
-    //
-
-    /**
-     * Allows ability to define an ingredient from another mod without depending. Serializes the data
-     * to be read by the regular {@link ItemValue}. Only use this for generating data.
-     */
-    public static class MissingSingleItemList implements Ingredient.Value
-    {
-        private final ResourceLocation id;
-
-        public MissingSingleItemList(ResourceLocation id)
-        {
-            this.id = id;
-        }
-
-        @Override
-        public Collection<ItemStack> getItems()
-        {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public JsonObject serialize()
-        {
-            JsonObject object = new JsonObject();
-            object.addProperty("item", this.id.toString());
-            return object;
-        }
+        return new WorkstationIngredient(Ingredient.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id)), count);
     }
 }

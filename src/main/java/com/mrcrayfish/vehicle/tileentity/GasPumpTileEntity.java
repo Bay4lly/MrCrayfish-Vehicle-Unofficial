@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -132,9 +132,9 @@ public class GasPumpTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("FuelingEntity", Tag.TAG_INT))
         {
             this.fuelingEntityId = compound.getInt("FuelingEntity");
@@ -142,22 +142,17 @@ public class GasPumpTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         compound.putInt("FuelingEntity", this.fuelingEntityId);
     }
 
     private void syncFuelingEntity()
     {
         CompoundTag compound = new CompoundTag();
-        this.saveAdditional(compound);
+        this.saveAdditional(compound, this.level.registryAccess());
         TileEntityUtil.sendUpdatePacket(this, compound);
     }
 
-    @Override
-    public AABB getRenderBoundingBox()
-    {
-        return INFINITE_EXTENT_AABB;
-    }
 }

@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.common.data;
 
-import com.mrcrayfish.framework.api.sync.IDataSerializer;
+import com.mrcrayfish.framework.api.sync.DataSerializer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
 
@@ -13,44 +13,32 @@ import java.util.Optional;
  */
 public class Serializers
 {
-    public static final IDataSerializer<Optional<BlockPos>> OPTIONAL_BLOCK_POS = new IDataSerializer<Optional<BlockPos>>()
-    {
-        @Override
-        public void write(FriendlyByteBuf buffer, Optional<BlockPos> optional)
-        {
-            buffer.writeBoolean(optional.isPresent());
-            optional.ifPresent(buffer::writeBlockPos);
-        }
-
-        @Override
-        public Optional<BlockPos> read(FriendlyByteBuf buffer)
-        {
-            if(buffer.readBoolean())
-            {
-                return Optional.of(buffer.readBlockPos());
-            }
+    private static final StreamCodec<RegistryFriendlyByteBuf, Optional<BlockPos>> OPTIONAL_BLOCK_POS_STREAM_CODEC = StreamCodec.of(
+        (buf, optional) -> {
+            buf.writeBoolean(optional.isPresent());
+            optional.ifPresent(buf::writeBlockPos);
+        },
+        buf -> {
+            if(buf.readBoolean()) return Optional.of(buf.readBlockPos());
             return Optional.empty();
         }
+    );
 
-        @Override
-        public Tag write(Optional<BlockPos> value)
-        {
+    public static final DataSerializer<Optional<BlockPos>> OPTIONAL_BLOCK_POS = new DataSerializer<>(
+        OPTIONAL_BLOCK_POS_STREAM_CODEC,
+        (optional, provider) -> {
             CompoundTag compound = new CompoundTag();
-            compound.putBoolean("Present", value.isPresent());
-            value.ifPresent(blockPos -> compound.putLong("BlockPos", value.get().asLong()));
+            compound.putBoolean("Present", optional.isPresent());
+            optional.ifPresent(blockPos -> compound.putLong("BlockPos", blockPos.asLong()));
             return compound;
-        }
-
-        @Override
-        public Optional<BlockPos> read(Tag nbt)
-        {
+        },
+        (nbt, provider) -> {
             CompoundTag compound = (CompoundTag) nbt;
             if(compound.getBoolean("Present"))
             {
-                BlockPos pos = BlockPos.of(compound.getLong("BlockPos"));
-                return Optional.of(pos);
+                return Optional.of(BlockPos.of(compound.getLong("BlockPos")));
             }
             return Optional.empty();
         }
-    };
+    );
 }

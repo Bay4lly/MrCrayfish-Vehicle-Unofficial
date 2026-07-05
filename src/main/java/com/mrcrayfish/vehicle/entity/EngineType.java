@@ -8,10 +8,10 @@ import net.minecraft.resources.ResourceLocation;
  */
 public enum EngineType implements IEngineType
 {
-    NONE(new ResourceLocation(Reference.MOD_ID, "none")),
-    SMALL_MOTOR(new ResourceLocation(Reference.MOD_ID, "small_motor")),
-    LARGE_MOTOR(new ResourceLocation(Reference.MOD_ID, "large_motor")),
-    ELECTRIC_MOTOR(new ResourceLocation(Reference.MOD_ID, "electric_motor"));
+    NONE(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "none")),
+    SMALL_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "small_motor")),
+    LARGE_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "large_motor")),
+    ELECTRIC_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "electric_motor"));
 
     private final ResourceLocation id;
 

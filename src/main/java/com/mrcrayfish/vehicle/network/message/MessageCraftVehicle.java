@@ -1,5 +1,11 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
 import com.mrcrayfish.vehicle.common.VehicleRegistry;
@@ -14,7 +20,6 @@ import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
 import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -23,16 +28,23 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent.Context;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
 {
+    public static final CustomPacketPayload.Type<MessageCraftVehicle> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "craft_vehicle"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageCraftVehicle> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageCraftVehicle().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
     private String vehicleId;
     private BlockPos pos;
 
@@ -45,24 +57,24 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
     }
 
     @Override
-    public void encode(MessageCraftVehicle message, FriendlyByteBuf buffer)
+    public void encode(MessageCraftVehicle message, RegistryFriendlyByteBuf buffer)
     {
         buffer.writeUtf(message.vehicleId, 128);
         buffer.writeBlockPos(message.pos);
     }
 
     @Override
-    public MessageCraftVehicle decode(FriendlyByteBuf buffer)
+    public MessageCraftVehicle decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageCraftVehicle(buffer.readUtf(128), buffer.readBlockPos());
     }
 
     @Override
-    public void handle(MessageCraftVehicle message, Supplier<Context> supplier)
+    public void handle(MessageCraftVehicle message, IPayloadContext context)
     {
-        supplier.get().enqueueWork(() ->
+        context.enqueueWork(() ->
         {
-            ServerPlayer player = supplier.get().getSender();
+            ServerPlayer player = ((ServerPlayer) context.player());
             if(player == null)
                 return;
 
@@ -74,11 +86,11 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
             if(!workstation.getPos().equals(message.pos))
                 return;
 
-            ResourceLocation entityId = new ResourceLocation(message.vehicleId);
+            ResourceLocation entityId = ResourceLocation.parse(message.vehicleId);
             if(Config.SERVER.disabledVehicles.get().contains(entityId.toString()))
                 return;
 
-            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entityId);
             if(entityType == null)
                 return;
 
@@ -158,9 +170,8 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
                 }
             }
 
-            ItemStack stack = VehicleCrateBlock.create(entityId, color, engineStack, wheelStack);
+            ItemStack stack = VehicleCrateBlock.create(world.registryAccess(), entityId, color, engineStack, wheelStack);
             world.addFreshEntity(new ItemEntity(world, message.pos.getX() + 0.5, message.pos.getY() + 1.125, message.pos.getZ() + 0.5, stack));
         });
-        supplier.get().setPacketHandled(true);
     }
 }

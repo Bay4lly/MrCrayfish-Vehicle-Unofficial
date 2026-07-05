@@ -23,7 +23,7 @@ class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>
     @Shadow
     protected M model;
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
     void fireRenderPlayerPre(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
     {
         if(!(entity instanceof Player))
@@ -32,7 +32,7 @@ class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>
         PlayerModelHandler.onPreRender((Player) entity, poseStack, partialTick);
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(shift = Shift.AFTER, value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(shift = Shift.AFTER, value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
     void fireRenderPlayerPost(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
     {
         if(!(entity instanceof Player))

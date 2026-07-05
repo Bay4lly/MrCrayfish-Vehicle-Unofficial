@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +23,7 @@ import java.util.Collections;
  */
 public class FluidExtractorScreen extends AbstractContainerScreen<FluidExtractorContainer>
 {
-    private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/fluid_extractor.png");
+    private static final ResourceLocation GUI = ResourceLocation.parse("vehicle:textures/gui/fluid_extractor.png");
 
     private Inventory playerInventory;
     private FluidExtractorTileEntity fluidExtractorTileEntity;
@@ -40,7 +40,7 @@ public class FluidExtractorScreen extends AbstractContainerScreen<FluidExtractor
     @Override
     public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(matrixStack); //TODO do I need this?
+        this.renderBackground(matrixStack, mouseX, mouseY, partialTicks); //TODO do I need this?
         super.render(matrixStack, mouseX, mouseY, partialTicks);
 
         int startX = (this.width - this.imageWidth) / 2;

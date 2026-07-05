@@ -1,8 +1,6 @@
 package com.mrcrayfish.vehicle.item;
 
-import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import com.mrcrayfish.vehicle.init.ModDataComponents;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,20 +13,17 @@ public interface IDyeable
 {
     default boolean hasColor(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        return compound != null && compound.contains("Color", Tag.TAG_INT);
+        return stack.has(ModDataComponents.COLOR.get());
     }
 
     default int getColor(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        return compound != null ? compound.getInt("Color") : -1;
+        return stack.getOrDefault(ModDataComponents.COLOR.get(), -1);
     }
 
     default void setColor(ItemStack stack, int color)
     {
-        CompoundTag compound = CommonUtils.getOrCreateStackTag(stack);
-        compound.putInt("Color", color);
+        stack.set(ModDataComponents.COLOR.get(), color);
     }
 
     public static ItemStack dyeStack(ItemStack stack, List<DyeItem> dyes)
@@ -58,10 +53,10 @@ public interface IDyeable
 
             for(DyeItem dyeitem : dyes)
             {
-                float[] colorComponents = dyeitem.getDyeColor().getTextureDiffuseColors();
-                int red = (int) (colorComponents[0] * 255.0F);
-                int green = (int) (colorComponents[1] * 255.0F);
-                int blue = (int) (colorComponents[2] * 255.0F);
+                int color = dyeitem.getDyeColor().getTextureDiffuseColor();
+                int red = (color >> 16) & 255;
+                int green = (color >> 8) & 255;
+                int blue = color & 255;
                 maxColor += Math.max(red, Math.max(green, blue));
                 combinedColors[0] += red;
                 combinedColors[1] += green;

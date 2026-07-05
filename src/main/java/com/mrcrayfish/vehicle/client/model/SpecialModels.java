@@ -5,17 +5,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public enum SpecialModels implements ISpecialModel
 {
-    QUAD_BIKE_BODY(new ResourceLocation(Reference.MOD_ID, "item/quad_bike_base"), true),
-    QUAD_BIKE_HANDLES(new ResourceLocation(Reference.MOD_ID, "item/quad_bike_handles"), true),
+    QUAD_BIKE_BODY(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/quad_bike_base"), "standalone"), true),
+    QUAD_BIKE_HANDLES(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/quad_bike_handles"), "standalone"), true),
     ATV_BODY("atv_body"),
     ATV_HANDLES("atv_handles"),
     DUNE_BUGGY_BODY("dune_buggy_body"),
@@ -39,10 +40,10 @@ public enum SpecialModels implements ISpecialModel
     SPORTS_PLANE_WHEEL_COVER("sports_plane_wheel_cover"),
     SPORTS_PLANE_LEG("sports_plane_leg"),
     SPORTS_PLANE_PROPELLER("sports_plane_propeller"),
-    HELICOPTER_BODY(new ResourceLocation(Reference.MOD_ID, "item/helicopter_base"), true),
-    HELICOPTER_BLADES(new ResourceLocation(Reference.MOD_ID, "item/helicopter_blades"), true),
-    HELICOPTER_JOYSTICK(new ResourceLocation(Reference.MOD_ID, "item/helicopter_joystick"), true),
-    HELICOPTER_TAIL_ROTOR(new ResourceLocation(Reference.MOD_ID, "item/helicopter_tail_rotor"), true),
+    HELICOPTER_BODY(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/helicopter_base"), "standalone"), true),
+    HELICOPTER_BLADES(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/helicopter_blades"), "standalone"), true),
+    HELICOPTER_JOYSTICK(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/helicopter_joystick"), "standalone"), true),
+    HELICOPTER_TAIL_ROTOR(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "item/helicopter_tail_rotor"), "standalone"), true),
     GOLF_CART_BODY("golf_cart_body"),
     OFF_ROADER_BODY("off_roader_body"),
     TRACTOR("tractor_body"),
@@ -71,14 +72,14 @@ public enum SpecialModels implements ISpecialModel
     SOFA_HELICOPTER_SKID("sofa_helicopter_skid"),
 
     /* Mod dependent models */
-    RED_SOFA(new ModelResourceLocation(new ResourceLocation("cfm:red_sofa"), "inventory"), false),
-    RAINBOW_SOFA(new ModelResourceLocation(new ResourceLocation("cfm:rainbow_sofa"), "inventory"), false);
+    RED_SOFA(new ModelResourceLocation(ResourceLocation.parse("cfm:red_sofa"), "inventory"), false),
+    RAINBOW_SOFA(new ModelResourceLocation(ResourceLocation.parse("cfm:rainbow_sofa"), "inventory"), false);
 
     // Add spray can lid
     /**
      * The location of an item model in the [MOD_ID]/models/vehicle/[NAME] folder
      */
-    private ResourceLocation modelLocation;
+    private ModelResourceLocation modelLocation;
 
     /**
      * Determines if the model should be loaded as a special model
@@ -98,7 +99,7 @@ public enum SpecialModels implements ISpecialModel
      */
     SpecialModels(String modelName)
     {
-        this(new ResourceLocation(Reference.MOD_ID, "vehicle/" + modelName), true);
+        this(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "vehicle/" + modelName), "standalone"), true);
     }
 
     /**
@@ -106,7 +107,7 @@ public enum SpecialModels implements ISpecialModel
      *
      * @param resource name of the model file
      */
-    SpecialModels(ResourceLocation resource, boolean specialModel)
+    SpecialModels(ModelResourceLocation resource, boolean specialModel)
     {
         this.modelLocation = resource;
         this.specialModel = specialModel;

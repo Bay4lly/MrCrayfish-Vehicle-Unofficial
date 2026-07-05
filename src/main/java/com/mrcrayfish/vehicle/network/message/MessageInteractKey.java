@@ -1,23 +1,36 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageInteractKey implements IMessage<MessageInteractKey>
 {
+    public static final CustomPacketPayload.Type<MessageInteractKey> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "interact_key"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageInteractKey> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageInteractKey().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
     private int entityId;
 
     public MessageInteractKey()
@@ -35,24 +48,24 @@ public class MessageInteractKey implements IMessage<MessageInteractKey>
     }
 
     @Override
-    public void encode(MessageInteractKey message, FriendlyByteBuf buffer)
+    public void encode(MessageInteractKey message, RegistryFriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessageInteractKey decode(FriendlyByteBuf buffer)
+    public MessageInteractKey decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageInteractKey(buffer.readInt());
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void handle(MessageInteractKey message, Supplier<Context> supplier)
+    public void handle(MessageInteractKey message, IPayloadContext context)
     {
-        supplier.get().enqueueWork(() ->
+        context.enqueueWork(() ->
         {
-            ServerPlayer player = supplier.get().getSender();
+            ServerPlayer player = ((ServerPlayer) context.player());
             if(player != null)
             {
                 Entity targetEntity = player.level().getEntity(message.entityId);
@@ -100,6 +113,5 @@ public class MessageInteractKey implements IMessage<MessageInteractKey>
                 }
             }
         });
-        supplier.get().setPacketHandled(true);
     }
 }

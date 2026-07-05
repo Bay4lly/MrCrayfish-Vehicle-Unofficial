@@ -25,8 +25,8 @@ import java.util.function.Supplier;
 public class StorageTrailerRenderer extends AbstractTrailerRenderer<StorageTrailerEntity>
 {
     //private static final ModelChest MOPED_CHEST = new ModelChest();
-    private static final ResourceLocation TEXTURE_CHRISTMAS = new ResourceLocation("textures/entity/chest/christmas.png");
-    private static final ResourceLocation TEXTURE_NORMAL = new ResourceLocation("textures/entity/chest/normal.png");
+    private static final ResourceLocation TEXTURE_CHRISTMAS = ResourceLocation.parse("textures/entity/chest/christmas.png");
+    private static final ResourceLocation TEXTURE_NORMAL = ResourceLocation.parse("textures/entity/chest/normal.png");
     private final boolean isChristmas;
 
     public StorageTrailerRenderer(Supplier<VehicleProperties> properties)

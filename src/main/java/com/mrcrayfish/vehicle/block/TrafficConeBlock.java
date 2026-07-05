@@ -29,9 +29,9 @@ public class TrafficConeBlock extends Block
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter reader, List<Component> list, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
-        ObjectEntityBlock.appendHoverText(this, stack, reader, list, flag);
+        ObjectEntityBlock.appendHoverText(this, stack, context, list, flag);
     }
 
     @Override

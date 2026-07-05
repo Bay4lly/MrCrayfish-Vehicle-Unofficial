@@ -15,12 +15,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,9 @@ import java.util.List;
  */
 public class WorkstationBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends WorkstationBlock> codec() { return MapCodec.unit(this); }
     private static final VoxelShape SHAPE = Util.make(() -> {
         List<VoxelShape> shapes = new ArrayList<>();
         shapes.add(Block.box(0, 1, 0, 16, 16, 16));
@@ -58,14 +61,14 @@ public class WorkstationBlock extends RotatedObjectBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
             BlockEntity tileEntity = world.getBlockEntity(pos);
             if(tileEntity instanceof MenuProvider)
             {
-                NetworkHooks.openScreen((ServerPlayer) playerEntity, (MenuProvider) tileEntity, pos);
+                ((ServerPlayer) playerEntity).openMenu((MenuProvider) tileEntity, pos);
                 return InteractionResult.SUCCESS;
             }
         }

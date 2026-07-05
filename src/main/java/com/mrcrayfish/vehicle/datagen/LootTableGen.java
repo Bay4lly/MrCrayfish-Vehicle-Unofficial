@@ -9,10 +9,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,9 +20,9 @@ import java.util.stream.Collectors;
  */
 public class LootTableGen extends BlockLootSubProvider
 {
-    public LootTableGen()
+    public LootTableGen(net.minecraft.core.HolderLookup.Provider provider)
     {
-        super(Set.of(), FeatureFlags.DEFAULT_FLAGS);
+        super(Set.of(), FeatureFlags.DEFAULT_FLAGS, provider);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class LootTableGen extends BlockLootSubProvider
     @Override
     protected Iterable<Block> getKnownBlocks()
     {
-        return ForgeRegistries.BLOCKS.getValues().stream().filter(block -> ForgeRegistries.BLOCKS.getKey(block) != null && Reference.MOD_ID.equals(ForgeRegistries.BLOCKS.getKey(block).getNamespace())).collect(Collectors.toSet()); // FIXME
+        return BuiltInRegistries.BLOCK.stream().filter(block -> BuiltInRegistries.BLOCK.getKey(block) != null && Reference.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace())).collect(Collectors.toSet()); // FIXME
     }
 
     protected LootTable.Builder createFluidTankDrop(Block block)
@@ -58,6 +56,6 @@ public class LootTableGen extends BlockLootSubProvider
 
     protected LootTable.Builder createVehicleCrateDrop(Block block)
     {
-        return LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block).apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("Vehicle", "BlockEntityTag.Vehicle").copy("Color", "BlockEntityTag.Color").copy("EngineStack", "BlockEntityTag.EngineStack").copy("Creative", "BlockEntityTag.Creative").copy("WheelStack", "BlockEntityTag.WheelStack")))));
+        return this.createSingleItemTable(block);
     }
 }

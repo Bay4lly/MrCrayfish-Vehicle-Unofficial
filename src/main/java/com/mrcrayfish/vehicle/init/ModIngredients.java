@@ -3,17 +3,11 @@ package com.mrcrayfish.vehicle.init;
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.crafting.WorkstationIngredient;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.common.crafting.CraftingHelper;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 public class ModIngredients
 {
-    public static void register(RegisterEvent event)
-    {
-        if (event.getRegistryKey().equals(ForgeRegistries.Keys.RECIPE_SERIALIZERS))
-        {
-            CraftingHelper.register(new ResourceLocation(Reference.MOD_ID, "workstation"), WorkstationIngredient.Serializer.INSTANCE);
-        }
-    }
+    // Custom ingredient types are handled via codec-based registration in NeoForge 1.21
 }

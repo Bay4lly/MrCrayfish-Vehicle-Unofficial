@@ -5,6 +5,10 @@ import com.mrcrayfish.vehicle.init.ModBlocks;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
 import com.mrcrayfish.vehicle.tileentity.VehicleCrateTileEntity;
+import com.mrcrayfish.vehicle.common.VehicleRegistry;
+import com.mrcrayfish.vehicle.entity.EngineTier;
+import com.mrcrayfish.vehicle.entity.VehicleProperties;
+import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -35,13 +39,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -53,6 +58,9 @@ import java.util.List;
  */
 public class VehicleCrateBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends VehicleCrateBlock> codec() { return MapCodec.unit(this); }
     public static final List<ResourceLocation> REGISTERED_CRATES = new ArrayList<>();
     private static final VoxelShape PANEL = box(0, 0, 0, 16, 2, 16);
 
@@ -104,9 +112,9 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
-        if(result.getDirection() == Direction.UP && playerEntity.getItemInHand(hand).getItem() == ModItems.WRENCH.get())
+        if(result.getDirection() == Direction.UP && playerEntity.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND).getItem() == ModItems.WRENCH.get())
         {
             this.openCrate(world, pos, state, playerEntity);
             return InteractionResult.SUCCESS;
@@ -117,6 +125,25 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack)
     {
+        net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if(customData != null && world.getBlockEntity(pos) instanceof VehicleCrateTileEntity crate)
+        {
+            net.minecraft.nbt.CompoundTag tag = customData.copyTag();
+            if(tag.contains("Vehicle", net.minecraft.nbt.Tag.TAG_STRING))
+            {
+                crate.setEntityId(net.minecraft.resources.ResourceLocation.parse(tag.getString("Vehicle")));
+                if(tag.getBoolean("Creative"))
+                {
+                    VehicleProperties properties = VehicleProperties.get(crate.getEntityId());
+                    if(properties != null)
+                    {
+                        EngineItem engineItem = VehicleRegistry.getEngineItem(properties.getEngineType(), EngineTier.IRON);
+                        if(engineItem != null) crate.setEngineStack(new net.minecraft.world.item.ItemStack(engineItem));
+                        crate.setWheelStack(new net.minecraft.world.item.ItemStack(com.mrcrayfish.vehicle.init.ModItems.STANDARD_WHEEL.get()));
+                    }
+                }
+            }
+        }
         if(livingEntity instanceof Player && ((Player) livingEntity).isCreative())
         {
             this.openCrate(world, pos, state, livingEntity);
@@ -178,20 +205,18 @@ public class VehicleCrateBlock extends RotatedObjectBlock
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter reader, List<Component> list, TooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag advanced)
     {
         Component vehicleName = EntityType.PIG.getDescription();
-        CompoundTag tagCompound = stack.getTag();
-        if(tagCompound != null)
+        net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+        if(customData == null) customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if(customData != null)
         {
-            if(tagCompound.contains("BlockEntityTag", Tag.TAG_COMPOUND))
+            CompoundTag blockEntityTag = customData.copyTag();
+            String entityType = blockEntityTag.getString("Vehicle");
+            if(!Strings.isNullOrEmpty(entityType))
             {
-                CompoundTag blockEntityTag = tagCompound.getCompound("BlockEntityTag");
-                String entityType = blockEntityTag.getString("Vehicle");
-                if(!Strings.isNullOrEmpty(entityType))
-                {
-                    vehicleName = EntityType.byString(entityType).orElse(EntityType.PIG).getDescription();
-                }
+                vehicleName = EntityType.byString(entityType).orElse(EntityType.PIG).getDescription();
             }
         }
         if(Screen.hasShiftDown())
@@ -205,17 +230,22 @@ public class VehicleCrateBlock extends RotatedObjectBlock
         }
     }
 
-    public static ItemStack create(ResourceLocation entityId, int color, ItemStack engine, ItemStack wheel)
+    public static ItemStack create(net.minecraft.core.HolderLookup.Provider registries, ResourceLocation entityId, int color, ItemStack engine, ItemStack wheel)
     {
         CompoundTag blockEntityTag = new CompoundTag();
         blockEntityTag.putString("Vehicle", entityId.toString());
+        blockEntityTag.putString("id", "vehicle:vehicle_crate");
         blockEntityTag.putInt("Color", color);
-        if (engine != null) blockEntityTag.put("EngineStack", engine.save(new CompoundTag()));
-        blockEntityTag.put("WheelStack", wheel.save(new CompoundTag()));
-        CompoundTag itemTag = new CompoundTag();
-        itemTag.put("BlockEntityTag", blockEntityTag);
+        if (engine != null && !engine.isEmpty())
+        {
+            com.mrcrayfish.vehicle.util.CommonUtils.writeItemStackToTag(registries, blockEntityTag, "EngineStack", engine);
+        }
+        if (wheel != null && !wheel.isEmpty())
+        {
+            com.mrcrayfish.vehicle.util.CommonUtils.writeItemStackToTag(registries, blockEntityTag, "WheelStack", wheel);
+        }
         ItemStack stack = new ItemStack(ModBlocks.VEHICLE_CRATE.get());
-        stack.setTag(itemTag);
+        stack.set(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.of(blockEntityTag));
         return stack;
     }
 

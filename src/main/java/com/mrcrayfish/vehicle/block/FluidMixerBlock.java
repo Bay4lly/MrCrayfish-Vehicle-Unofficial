@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -22,8 +23,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.fluids.FluidUtil;
 
 import javax.annotation.Nullable;
 
@@ -32,6 +32,9 @@ import javax.annotation.Nullable;
  */
 public class FluidMixerBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends FluidMixerBlock> codec() { return MapCodec.unit(this); }
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     public FluidMixerBlock()
@@ -47,17 +50,17 @@ public class FluidMixerBlock extends RotatedObjectBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
-            if(!FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
+            if(!FluidUtil.interactWithFluidHandler(playerEntity, net.minecraft.world.InteractionHand.MAIN_HAND, world, pos, result.getDirection()))
             {
                 BlockEntity tileEntity = world.getBlockEntity(pos);
                 if(tileEntity instanceof MenuProvider)
                 {
                     TileEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayer) playerEntity);
-                    NetworkHooks.openScreen((ServerPlayer) playerEntity, (MenuProvider) tileEntity, pos);
+                    ((ServerPlayer) playerEntity).openMenu((MenuProvider) tileEntity, pos);
                 }
             }
             return InteractionResult.SUCCESS;

@@ -15,6 +15,15 @@ public interface IStorage extends Container
 {
     StorageInventory getInventory();
 
+    default net.minecraft.core.HolderLookup.Provider getRegistries()
+    {
+        if(this instanceof net.minecraft.world.entity.Entity)
+        {
+            return ((net.minecraft.world.entity.Entity) this).level().registryAccess();
+        }
+        return null;
+    }
+
     /*@Override
     default int[] getSlotsForFace(Direction side)
     {

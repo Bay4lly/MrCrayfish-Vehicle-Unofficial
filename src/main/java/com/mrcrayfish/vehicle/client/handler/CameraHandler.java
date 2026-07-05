@@ -6,11 +6,11 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.ComputeFovModifierEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Manages changing the point of view of the camera when mounting and dismount vehicles
@@ -70,10 +70,10 @@ public class CameraHandler
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
         Player player = Minecraft.getInstance().player;
-        if(event.phase != TickEvent.Phase.END || player == null)
+        if(player == null)
             return;
 
         if(player.getVehicle() != null)

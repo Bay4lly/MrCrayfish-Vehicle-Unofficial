@@ -66,15 +66,15 @@ public class PipeTileEntity extends TileEntitySynced
         if(this.level != null && !this.level.isClientSide())
         {
             CompoundTag compound = new CompoundTag();
-            this.saveAdditional(compound);
+            this.saveAdditional(compound, this.level.registryAccess());
             TileEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("DisabledConnections", Tag.TAG_BYTE_ARRAY))
         {
             byte[] connections = compound.getByteArray("DisabledConnections");
@@ -86,9 +86,9 @@ public class PipeTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         this.writeConnections(compound);
     }
 

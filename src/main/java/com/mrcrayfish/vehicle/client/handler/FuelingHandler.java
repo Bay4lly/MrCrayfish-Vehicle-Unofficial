@@ -20,9 +20,9 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Author: MrCrayfish
@@ -34,10 +34,10 @@ public class FuelingHandler
     private boolean renderNozzle;
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
         Player player = Minecraft.getInstance().player;
-        if(event.phase != TickEvent.Phase.END || player == null)
+        if(player == null)
             return;
 
         if(this.fueling)
@@ -98,7 +98,7 @@ public class FuelingHandler
         EntityRayTracer.RayTraceResultRotated result = EntityRayTracer.instance().getContinuousInteraction();
         if(result != null && result.equalsContinuousInteraction(RayTraceFunction.FUNCTION_FUELING) && event.getHand() == EntityRayTracer.instance().getContinuousInteractionInteractionHand())
         {
-            double offset = Math.sin((this.fuelTickCounter + minecraft.getFrameTime()) / 3.0) * 0.1;
+            double offset = Math.sin((this.fuelTickCounter + minecraft.getTimer().getGameTimeDeltaPartialTick(true)) / 3.0) * 0.1;
             matrixStack.translate(0, 0.35 + offset, -0.2);
             matrixStack.mulPose(Axis.XP.rotationDegrees(-25F));
         }
