@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -37,8 +38,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -48,6 +49,9 @@ import java.util.List;
  */
 public class FuelDrumBlock extends BaseEntityBlock
 {
+
+    @Override
+    public MapCodec<? extends FuelDrumBlock> codec() { return MapCodec.unit(this); }
     public static final EnumProperty<Axis> AXIS = BlockStateProperties.AXIS;
     public static final BooleanProperty INVERTED = BlockStateProperties.INVERTED;
 
@@ -82,7 +86,7 @@ public class FuelDrumBlock extends BaseEntityBlock
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter reader, List<Component> list, TooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag advanced)
     {
         if(Screen.hasShiftDown())
         {
@@ -90,14 +94,14 @@ public class FuelDrumBlock extends BaseEntityBlock
         }
         else
         {
-            CompoundTag tag = stack.getTag();
-            if(tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND))
+            net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+            if(customData != null)
             {
-                CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
+                CompoundTag blockEntityTag = customData.copyTag();
                 if(blockEntityTag.contains("FluidName", Tag.TAG_STRING))
                 {
                     String fluidName = blockEntityTag.getString("FluidName");
-                    Fluid fluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(fluidName));
+                    Fluid fluid = BuiltInRegistries.FLUID.get(ResourceLocation.parse(fluidName));
                     int amount = blockEntityTag.getInt("Amount");
                     if(fluid != null && amount > 0)
                     {
@@ -111,11 +115,11 @@ public class FuelDrumBlock extends BaseEntityBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide())
         {
-            if(FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
+            if(FluidUtil.interactWithFluidHandler(playerEntity, net.minecraft.world.InteractionHand.MAIN_HAND, world, pos, result.getDirection()))
             {
                 return InteractionResult.SUCCESS;
             }

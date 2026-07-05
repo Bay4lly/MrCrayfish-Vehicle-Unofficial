@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
@@ -14,19 +14,19 @@ public class Config
 {
     public static class Client
     {
-        public final ForgeConfigSpec.BooleanValue renderOutlines;
-        public final ForgeConfigSpec.BooleanValue renderSteeringDebug;
-        public final ForgeConfigSpec.BooleanValue reloadRayTracerEachTick;
-        public final ForgeConfigSpec.BooleanValue enabledLeftClick;
-        public final ForgeConfigSpec.BooleanValue enabledSpeedometer;
-        public final ForgeConfigSpec.BooleanValue autoPerspective;
-        public final ForgeConfigSpec.BooleanValue workstationAnimation;
-        public final ForgeConfigSpec.BooleanValue useTriggers;
-        public final ForgeConfigSpec.BooleanValue rotateCameraWithVehicle;
-        public final ForgeConfigSpec.BooleanValue reloadVehiclePropertiesEachTick;
-        public final ForgeConfigSpec.IntValue hoseSegments;
+        public final ModConfigSpec.BooleanValue renderOutlines;
+        public final ModConfigSpec.BooleanValue renderSteeringDebug;
+        public final ModConfigSpec.BooleanValue reloadRayTracerEachTick;
+        public final ModConfigSpec.BooleanValue enabledLeftClick;
+        public final ModConfigSpec.BooleanValue enabledSpeedometer;
+        public final ModConfigSpec.BooleanValue autoPerspective;
+        public final ModConfigSpec.BooleanValue workstationAnimation;
+        public final ModConfigSpec.BooleanValue useTriggers;
+        public final ModConfigSpec.BooleanValue rotateCameraWithVehicle;
+        public final ModConfigSpec.BooleanValue reloadVehiclePropertiesEachTick;
+        public final ModConfigSpec.IntValue hoseSegments;
 
-        Client(ForgeConfigSpec.Builder builder)
+        Client(ModConfigSpec.Builder builder)
         {
             builder.comment("Client configuration settings").push("client");
             {
@@ -63,32 +63,32 @@ public class Config
 
     public static class Server
     {
-        public final ForgeConfigSpec.BooleanValue fuelEnabled;
-        public final ForgeConfigSpec.BooleanValue vehicleDamage;
-        public final ForgeConfigSpec.DoubleValue trailerDetachThreshold;
-        public final ForgeConfigSpec.IntValue trailerSyncCooldown;
-        public final ForgeConfigSpec.IntValue trailerInventorySyncCooldown;
-        public final ForgeConfigSpec.BooleanValue pickUpVehicles;
-        public final ForgeConfigSpec.DoubleValue maxHoseDistance;
-        public final ForgeConfigSpec.IntValue pumpTransferAmount;
-        public final ForgeConfigSpec.IntValue gasPumpCapacity;
-        public final ForgeConfigSpec.IntValue pumpCapacity;
-        public final ForgeConfigSpec.IntValue extractorCapacity;
-        public final ForgeConfigSpec.IntValue extractorExtractTime;
-        public final ForgeConfigSpec.IntValue mixerInputCapacity;
-        public final ForgeConfigSpec.IntValue mixerOutputCapacity;
-        public final ForgeConfigSpec.IntValue mixerMixTime;
-        public final ForgeConfigSpec.IntValue fuelDrumCapacity;
-        public final ForgeConfigSpec.IntValue industrialFuelDrumCapacity;
-        public final ForgeConfigSpec.DoubleValue fuelConsumptionFactor;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> disabledVehicles;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> validFuels;
-        public final ForgeConfigSpec.IntValue jerryCanCapacity;
-        public final ForgeConfigSpec.IntValue industrialJerryCanCapacity;
-        public final ForgeConfigSpec.IntValue jerryCanFillRate;
-        public final ForgeConfigSpec.IntValue sprayCanCapacity;
+        public final ModConfigSpec.BooleanValue fuelEnabled;
+        public final ModConfigSpec.BooleanValue vehicleDamage;
+        public final ModConfigSpec.DoubleValue trailerDetachThreshold;
+        public final ModConfigSpec.IntValue trailerSyncCooldown;
+        public final ModConfigSpec.IntValue trailerInventorySyncCooldown;
+        public final ModConfigSpec.BooleanValue pickUpVehicles;
+        public final ModConfigSpec.DoubleValue maxHoseDistance;
+        public final ModConfigSpec.IntValue pumpTransferAmount;
+        public final ModConfigSpec.IntValue gasPumpCapacity;
+        public final ModConfigSpec.IntValue pumpCapacity;
+        public final ModConfigSpec.IntValue extractorCapacity;
+        public final ModConfigSpec.IntValue extractorExtractTime;
+        public final ModConfigSpec.IntValue mixerInputCapacity;
+        public final ModConfigSpec.IntValue mixerOutputCapacity;
+        public final ModConfigSpec.IntValue mixerMixTime;
+        public final ModConfigSpec.IntValue fuelDrumCapacity;
+        public final ModConfigSpec.IntValue industrialFuelDrumCapacity;
+        public final ModConfigSpec.DoubleValue fuelConsumptionFactor;
+        public final ModConfigSpec.ConfigValue<List<? extends String>> disabledVehicles;
+        public final ModConfigSpec.ConfigValue<List<? extends String>> validFuels;
+        public final ModConfigSpec.IntValue jerryCanCapacity;
+        public final ModConfigSpec.IntValue industrialJerryCanCapacity;
+        public final ModConfigSpec.IntValue jerryCanFillRate;
+        public final ModConfigSpec.IntValue sprayCanCapacity;
 
-        Server(ForgeConfigSpec.Builder builder)
+        Server(ModConfigSpec.Builder builder)
         {
             builder.comment("Server configuration settings").push("common");
             {
@@ -155,19 +155,19 @@ public class Config
         }
     }
 
-    static final ForgeConfigSpec clientSpec;
+    static final ModConfigSpec clientSpec;
     public static final Config.Client CLIENT;
 
-    static final ForgeConfigSpec serverSpec;
+    static final ModConfigSpec serverSpec;
     public static final Server SERVER;
 
     static
     {
-        final Pair<Client, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(Config.Client::new);
+        final Pair<Client, ModConfigSpec> clientSpecPair = new ModConfigSpec.Builder().configure(Config.Client::new);
         clientSpec = clientSpecPair.getRight();
         CLIENT = clientSpecPair.getLeft();
 
-        final Pair<Server, ForgeConfigSpec> commonSpecPair = new ForgeConfigSpec.Builder().configure(Server::new);
+        final Pair<Server, ModConfigSpec> commonSpecPair = new ModConfigSpec.Builder().configure(Server::new);
         serverSpec = commonSpecPair.getRight();
         SERVER = commonSpecPair.getLeft();
     }

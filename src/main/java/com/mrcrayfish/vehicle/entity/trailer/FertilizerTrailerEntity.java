@@ -31,11 +31,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,11 +45,15 @@ import java.util.Map;
 public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
 {
     private static final EntityRayTracer.RayTracePart CONNECTION_BOX = new EntityRayTracer.RayTracePart(createScaledBoundingBox(-7 * 0.0625, 6.2 * 0.0625, 6 * 0.0625, 7 * 0.0625, 8.4 * 0.0625F, 18 * 0.0625, 1.1));
-    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> {
+    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = buildInteractionBoxMap();
+
+    private static Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> buildInteractionBoxMap()
+    {
+        if(!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
         Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> map = new HashMap<>();
         map.put(CONNECTION_BOX, EntityRayTracer.boxToTriangles(CONNECTION_BOX.getBox(), null));
         return map;
-    });
+    }
 
     private int inventoryTimer;
     private StorageInventory inventory;
@@ -80,7 +82,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         ItemStack heldItem = player.getItemInHand(hand);
         if((heldItem.isEmpty() || !(heldItem.getItem() instanceof SprayCanItem)) && player instanceof ServerPlayer)
         {
-            NetworkHooks.openScreen((ServerPlayer) player, this.getInventory(), buffer -> buffer.writeVarInt(this.getId()));
+            ((ServerPlayer) player).openMenu(this.getInventory(), buffer -> buffer.writeVarInt(this.getId()));
             return InteractionResult.SUCCESS;
         }
         return super.interact(player, hand);
@@ -94,7 +96,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         if(!level().isClientSide && Config.SERVER.trailerInventorySyncCooldown.get() > 0 && this.inventoryTimer++ == Config.SERVER.trailerInventorySyncCooldown.get())
         {
             this.inventoryTimer = 0;
-            PacketHandler.instance.send(PacketDistributor.TRACKING_ENTITY.with(() -> this), new MessageSyncInventory(this.getId(), this.inventory));
+            PacketHandler.sendToTrackingEntity(this, new MessageSyncInventory(this.getId(), this.inventory));
         }
     }
 
@@ -137,7 +139,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         if(state.getBlock() instanceof BonemealableBlock)
         {
             BonemealableBlock growable = (BonemealableBlock) state.getBlock();
-            if(growable.isValidBonemealTarget(level(), pos, state, false))
+            if(growable.isValidBonemealTarget(level(), pos, state))
             {
                 if(growable.isBonemealSuccess(level(), random, pos, state))
                 {
@@ -195,7 +197,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         if(compound.contains("Inventory", Tag.TAG_LIST))
         {
             this.initInventory();
-            InventoryUtil.readInventoryToNBT(compound, "Inventory", this.inventory);
+            InventoryUtil.readInventoryToNBT(compound, "Inventory", this.inventory, this.level().registryAccess());
         }
     }
 
@@ -205,7 +207,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
         {
-            InventoryUtil.writeInventoryToNBT(compound, "Inventory", this.inventory);
+            InventoryUtil.writeInventoryToNBT(compound, "Inventory", this.inventory, this.level().registryAccess());
         }
     }
 
@@ -271,7 +273,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         {
             if(result.getPartHit() == CONNECTION_BOX)
             {
-                PacketHandler.instance.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
+                PacketHandler.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
                 return true;
             }
         }

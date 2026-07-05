@@ -7,14 +7,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModItemTabs
 {
     public static final DeferredRegister<CreativeModeTab> REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Reference.MOD_ID);
 
-    public static final RegistryObject<CreativeModeTab> MAIN_TAB = REGISTER.register("main_tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = REGISTER.register("main_tab", () -> CreativeModeTab.builder()
             .title(Component.literal("Vehicles"))
             .icon(() -> ModItems.IRON_SMALL_ENGINE.get().getDefaultInstance())
             .displayItems((params, output) -> {
@@ -66,10 +66,9 @@ public class ModItemTabs
                     CompoundTag blockEntityTag = new CompoundTag();
                     blockEntityTag.putString("Vehicle", resourceLocation.toString());
                     blockEntityTag.putBoolean("Creative", true);
-                    CompoundTag itemTag = new CompoundTag();
-                    itemTag.put("BlockEntityTag", blockEntityTag);
                     ItemStack stack = new ItemStack(ModBlocks.VEHICLE_CRATE.get());
-                    stack.setTag(itemTag);
+                    stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                        net.minecraft.world.item.component.CustomData.of(blockEntityTag));
                     output.accept(stack);
                 });
             })

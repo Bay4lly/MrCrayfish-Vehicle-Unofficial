@@ -14,17 +14,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,14 +32,18 @@ import java.util.Map;
 /**
  * Author: MrCrayfish
  */
-public class FluidTrailerEntity extends TrailerEntity implements IEntityAdditionalSpawnData
+public class FluidTrailerEntity extends TrailerEntity implements IEntityWithComplexSpawn
 {
     private static final EntityRayTracer.RayTracePart CONNECTION_BOX = new EntityRayTracer.RayTracePart(createScaledBoundingBox(-7 * 0.0625, 4.3 * 0.0625, 14 * 0.0625, 7 * 0.0625, 8.5 * 0.0625F, 24 * 0.0625, 1.1));
-    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> {
+    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = buildInteractionBoxMap();
+
+    private static Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> buildInteractionBoxMap()
+    {
+        if(!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
         Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> map = new HashMap<>();
         map.put(CONNECTION_BOX, EntityRayTracer.boxToTriangles(CONNECTION_BOX.getBox(), null));
         return map;
-    });
+    }
 
     protected FluidTank tank = new FluidTank(FluidType.BUCKET_VOLUME * 100)
     {
@@ -99,7 +99,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     {
         if(result.getPartHit() == CONNECTION_BOX && rightClick)
         {
-            PacketHandler.instance.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
+            PacketHandler.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
             return true;
         }
         return super.processHit(result, rightClick);
@@ -117,7 +117,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
         super.readAdditionalSaveData(compound);
         if(compound.contains("Tank", Tag.TAG_COMPOUND))
         {
-            this.tank.readFromNBT(compound.getCompound("Tank"));
+            this.tank.readFromNBT(this.level().registryAccess(), compound.getCompound("Tank"));
         }
     }
 
@@ -126,18 +126,11 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     {
         super.addAdditionalSaveData(compound);
         CompoundTag tankTag = new CompoundTag();
-        this.tank.writeToNBT(tankTag);
+        this.tank.writeToNBT(this.level().registryAccess(), tankTag);
         compound.put("Tank", tankTag);
     }
 
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap)
-    {
-        if (cap == ForgeCapabilities.FLUID_HANDLER)
-            return LazyOptional.of(() -> this.tank).cast();
-        return super.getCapability(cap);
-    }
+    public FluidTank fluidHandler() { return this.tank; }
 
     public FluidTank getTank()
     {
@@ -148,21 +141,21 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     {
         if(!this.level().isClientSide)
         {
-            PacketHandler.instance.send(PacketDistributor.TRACKING_ENTITY.with(() -> this), new MessageEntityFluid(this.getId(), this.tank.getFluid()));
+            PacketHandler.sendToTrackingEntity(this, new MessageEntityFluid(this.getId(), this.tank.getFluid()));
         }
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         super.writeSpawnData(buffer);
-        buffer.writeNbt(this.tank.writeToNBT(new CompoundTag()));
+        buffer.writeNbt(this.tank.writeToNBT(this.level().registryAccess(), new CompoundTag()));
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer)
     {
         super.readSpawnData(buffer);
-        this.tank.readFromNBT(buffer.readNbt());
+        this.tank.readFromNBT(this.level().registryAccess(), buffer.readNbt());
     }
 }

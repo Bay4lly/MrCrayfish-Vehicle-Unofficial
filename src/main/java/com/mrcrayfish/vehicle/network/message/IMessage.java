@@ -1,24 +1,25 @@
 package com.mrcrayfish.vehicle.network.message;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Author: MrCrayfish
+ * <p>
+ * Ported to the NeoForge 1.21.1 custom payload network system. Each message is a
+ * {@link CustomPacketPayload} that supplies its own {@code TYPE} and {@code STREAM_CODEC}.
  */
-public interface IMessage<T>
+public interface IMessage<T extends CustomPacketPayload> extends CustomPacketPayload
 {
-    void encode(T message, FriendlyByteBuf buffer);
+    void encode(T message, RegistryFriendlyByteBuf buffer);
 
-    T decode(FriendlyByteBuf buffer);
+    T decode(RegistryFriendlyByteBuf buffer);
 
-    void handle(T message, Supplier<NetworkEvent.Context> supplier);
+    void handle(T message, IPayloadContext context);
 
-    static void enqueueTask(Supplier<NetworkEvent.Context> supplier, Runnable runnable)
+    static void enqueueTask(IPayloadContext context, Runnable runnable)
     {
-        supplier.get().enqueueWork(runnable);
-        supplier.get().setPacketHandled(true);
+        context.enqueueWork(runnable);
     }
 }

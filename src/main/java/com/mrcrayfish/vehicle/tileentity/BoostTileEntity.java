@@ -30,9 +30,9 @@ public class BoostTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("SpeedMultiplier", Tag.TAG_FLOAT))
         {
             this.speedMultiplier = compound.getFloat("SpeedMultiplier");
@@ -40,9 +40,9 @@ public class BoostTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         compound.putFloat("SpeedMultiplier", this.speedMultiplier);
     }
 }

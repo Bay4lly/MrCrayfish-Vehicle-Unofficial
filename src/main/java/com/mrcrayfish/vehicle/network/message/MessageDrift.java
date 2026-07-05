@@ -1,15 +1,28 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent.Context;
 
-import java.util.function.Supplier;
 
 public class MessageDrift implements IMessage<MessageDrift>
 {
+    public static final CustomPacketPayload.Type<MessageDrift> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "drift"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageDrift> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageDrift().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
 	private boolean drifting;
 
 	public MessageDrift() {}
@@ -20,23 +33,23 @@ public class MessageDrift implements IMessage<MessageDrift>
 	}
 
 	@Override
-	public void encode(MessageDrift message, FriendlyByteBuf buffer)
+	public void encode(MessageDrift message, RegistryFriendlyByteBuf buffer)
 	{
 		buffer.writeBoolean(message.drifting);
 	}
 
 	@Override
-	public MessageDrift decode(FriendlyByteBuf buffer)
+	public MessageDrift decode(RegistryFriendlyByteBuf buffer)
 	{
 		return new MessageDrift(buffer.readBoolean());
 	}
 
 	@Override
-	public void handle(MessageDrift message, Supplier<Context> supplier)
+	public void handle(MessageDrift message, IPayloadContext context)
 	{
-		supplier.get().enqueueWork(() ->
+		context.enqueueWork(() ->
 		{
-			ServerPlayer player = supplier.get().getSender();
+			ServerPlayer player = ((ServerPlayer) context.player());
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();
@@ -46,6 +59,5 @@ public class MessageDrift implements IMessage<MessageDrift>
 				}
 			}
 		});
-		supplier.get().setPacketHandled(true);
 	}
 }

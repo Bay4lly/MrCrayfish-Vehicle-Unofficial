@@ -16,8 +16,8 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
@@ -26,6 +26,9 @@ import javax.annotation.Nullable;
  */
 public abstract class TrailerEntity extends VehicleEntity
 {
+    @Override
+    public float maxUpStep() { return 1.0F; }
+
     public static final EntityDataAccessor<Integer> PULLING_ENTITY = SynchedEntityData.defineId(TrailerEntity.class, EntityDataSerializers.INT);
 
     private Entity pullingEntity;
@@ -37,14 +40,14 @@ public abstract class TrailerEntity extends VehicleEntity
     public TrailerEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
-        this.setMaxUpStep(1.0F);
+        // maxUpStep handled by override
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(PULLING_ENTITY, -1);
+        super.defineSynchedData(builder);
+        builder.define(PULLING_ENTITY, -1);
     }
 
     @Override
@@ -197,7 +200,6 @@ public abstract class TrailerEntity extends VehicleEntity
         return true;
     }
 
-    @Override
     public double getPassengersRidingOffset()
     {
         return 0.0;
@@ -257,7 +259,7 @@ public abstract class TrailerEntity extends VehicleEntity
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport)
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements)
     {
         this.lerpX = x;
         this.lerpY = y;

@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -24,8 +25,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.fluids.FluidUtil;
 
 import javax.annotation.Nullable;
 
@@ -34,6 +34,9 @@ import javax.annotation.Nullable;
  */
 public class FluidExtractorBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends FluidExtractorBlock> codec() { return MapCodec.unit(this); }
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     public FluidExtractorBlock()
@@ -49,14 +52,14 @@ public class FluidExtractorBlock extends RotatedObjectBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
-            ItemStack stack = playerEntity.getItemInHand(hand);
+            ItemStack stack = playerEntity.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
             if(stack.getItem() == Items.BUCKET)
             {
-                FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection());
+                FluidUtil.interactWithFluidHandler(playerEntity, net.minecraft.world.InteractionHand.MAIN_HAND, world, pos, result.getDirection());
                 return InteractionResult.SUCCESS;
             }
 
@@ -64,7 +67,7 @@ public class FluidExtractorBlock extends RotatedObjectBlock
             if(tileEntity instanceof FluidExtractorTileEntity)
             {
                 TileEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayer) playerEntity);
-                NetworkHooks.openScreen((ServerPlayer) playerEntity, (MenuProvider) tileEntity, pos);
+                ((ServerPlayer) playerEntity).openMenu((MenuProvider) tileEntity, pos);
                 return InteractionResult.SUCCESS;
             }
         }

@@ -2,22 +2,25 @@ package com.mrcrayfish.vehicle.tileentity;
 
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.FluidHandlerBlockEntity;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
-public class TileFluidHandlerSynced extends FluidHandlerBlockEntity
+public class TileFluidHandlerSynced extends BlockEntity
 {
+    protected FluidTank tank;
+
     public TileFluidHandlerSynced(@Nonnull BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, int capacity)
     {
         super(tileEntityTypeIn, pos, state);
@@ -49,7 +52,7 @@ public class TileFluidHandlerSynced extends FluidHandlerBlockEntity
         if(this.level != null && !this.level.isClientSide)
         {
             CompoundTag compound = new CompoundTag();
-            super.saveAdditional(compound);
+            this.saveAdditional(compound, this.level.registryAccess());
             TileEntityUtil.sendUpdatePacket(this, compound);
         }
     }
@@ -59,15 +62,29 @@ public class TileFluidHandlerSynced extends FluidHandlerBlockEntity
         if(this.level != null && !this.level.isClientSide)
         {
             CompoundTag compound = new CompoundTag();
-            super.saveAdditional(compound);
+            this.saveAdditional(compound, this.level.registryAccess());
             TileEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries)
     {
-        return this.saveWithId();
+        super.loadAdditional(tag, registries);
+        this.tank.readFromNBT(registries, tag);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries)
+    {
+        super.saveAdditional(tag, registries);
+        this.tank.writeToNBT(registries, tag);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries)
+    {
+        return this.saveWithId(registries);
     }
 
     @Nullable
@@ -78,12 +95,12 @@ public class TileFluidHandlerSynced extends FluidHandlerBlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt)
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries)
     {
         CompoundTag nbt = pkt.getTag();
         if(nbt != null)
         {
-            this.load(nbt);
+            this.loadAdditional(nbt, registries);
         }
     }
 

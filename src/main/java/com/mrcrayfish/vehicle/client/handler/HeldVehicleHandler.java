@@ -8,8 +8,8 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +27,9 @@ public class HeldVehicleHandler
     {
         if(!setupExtraLayers)
         {
-            Map<String, EntityRenderer<? extends Player>> skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
-            this.patchPlayerRender(skinMap.get("default"));
-            this.patchPlayerRender(skinMap.get("slim"));
+            var skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
+            this.patchPlayerRender(skinMap.get(net.minecraft.client.resources.PlayerSkin.Model.WIDE));
+            this.patchPlayerRender(skinMap.get(net.minecraft.client.resources.PlayerSkin.Model.SLIM));
             setupExtraLayers = true;
         }
     }

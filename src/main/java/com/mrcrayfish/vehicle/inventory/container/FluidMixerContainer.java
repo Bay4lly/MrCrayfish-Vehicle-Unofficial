@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeHooks;
 
 /**
  * Author: MrCrayfish
@@ -86,7 +85,7 @@ public class FluidMixerContainer extends AbstractContainerMenu
                         return ItemStack.EMPTY;
                     }
                 }
-                else if(ForgeHooks.getBurnTime(slotStack, null) > 0)
+                else if(slotStack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0)
                 {
                     if(!this.moveItemStackTo(slotStack, 0, 1, false))
                     {

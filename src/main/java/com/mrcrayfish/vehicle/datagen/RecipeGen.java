@@ -7,15 +7,15 @@ import com.mrcrayfish.vehicle.init.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -26,13 +26,13 @@ import java.util.function.Consumer;
  */
 public class RecipeGen extends RecipeProvider
 {
-    public RecipeGen(PackOutput generator)
+    public RecipeGen(PackOutput generator, java.util.concurrent.CompletableFuture<net.minecraft.core.HolderLookup.Provider> lookupProvider)
     {
-        super(generator);
+        super(generator, lookupProvider);
     }
 
     @Override
-    protected void buildRecipes(Consumer<FinishedRecipe> consumer)
+    protected void buildRecipes(RecipeOutput consumer)
     {
         netheriteSmithing(consumer, ModItems.DIAMOND_ELECTRIC_ENGINE.get(), ModItems.NETHERITE_ELECTRIC_ENGINE.get());
 
@@ -153,12 +153,12 @@ public class RecipeGen extends RecipeProvider
                 .pattern("GPR")
                 .pattern("IEI")
                 .define('I', Tags.Items.INGOTS_IRON)
-                .define('G', Tags.Items.GLASS)
+                .define('G', net.neoforged.neoforge.common.Tags.Items.GLASS_BLOCKS)
                 .define('P', Items.PISTON)
                 .define('R', Items.REDSTONE_BLOCK)
                 .define('E', ModItems.IRON_ELECTRIC_ENGINE.get()) //TODO convert to tag
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .unlockedBy("has_glass", has(Tags.Items.GLASS))
+                .unlockedBy("has_glass", has(net.neoforged.neoforge.common.Tags.Items.GLASS_BLOCKS))
                 .unlockedBy("has_piston", has(Items.PISTON))
                 .unlockedBy("has_redstone_block", has(Items.REDSTONE_BLOCK))
                 .unlockedBy("has_engine", has(ModItems.IRON_ELECTRIC_ENGINE.get()))
@@ -351,8 +351,8 @@ public class RecipeGen extends RecipeProvider
 
         //TODO crafting wheels, boost ramp and pads,
 
-        SpecialRecipeBuilder.special(ModRecipeSerializers.COLOR_SPRAY_CAN.get()).save(consumer, "vehicle:color_spray_can");
-        SpecialRecipeBuilder.special(ModRecipeSerializers.REFILL_SPRAY_CAN.get()).save(consumer, "vehicle:refill_spray_can");
+        SpecialRecipeBuilder.special(com.mrcrayfish.vehicle.recipe.RecipeColorSprayCan::new).save(consumer, ResourceLocation.fromNamespaceAndPath("vehicle", "color_spray_can"));
+        SpecialRecipeBuilder.special(com.mrcrayfish.vehicle.recipe.RecipeRefillSprayCan::new).save(consumer, ResourceLocation.fromNamespaceAndPath("vehicle", "refill_spray_can"));
 
         // Vehicles
         workstationCrafting(consumer, ModEntities.ALUMINUM_BOAT.get(), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
@@ -382,42 +382,42 @@ public class RecipeGen extends RecipeProvider
         workstationCrafting(consumer, ModEntities.VEHICLE_TRAILER.get(), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 48), WorkstationIngredient.of(ModItems.PANEL.get(), 2));
 
         // Furniture
-        //workstationCrafting(consumer, new ResourceLocation("cfm:bath"), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
-        dependantWorkstationCrafting(consumer, "cfm", new ResourceLocation("vehicle:sofa"), WorkstationIngredient.of(new ResourceLocation("cfm:rainbow_sofa"), 1), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 8));
-        //workstationCrafting(consumer, new ResourceLocation("cfm:sofacopter"), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
+        //workstationCrafting(consumer, ResourceLocation.parse("cfm:bath"), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
+        dependantWorkstationCrafting(consumer, "cfm", ResourceLocation.parse("vehicle:sofa"), WorkstationIngredient.of(ResourceLocation.parse("cfm:rainbow_sofa"), 1), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 8));
+        //workstationCrafting(consumer, ResourceLocation.parse("cfm:sofacopter"), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
 
         fluidExtracting(consumer, Items.BLAZE_ROD, FluidEntry.of(ModFluids.BLAZE_JUICE.get(), 450));
         fluidExtracting(consumer, Items.ENDER_PEARL, FluidEntry.of(ModFluids.ENDER_SAP.get(), 600));
         fluidMixing(consumer, FluidEntry.of(ModFluids.ENDER_SAP.get(), 200),  FluidEntry.of(ModFluids.BLAZE_JUICE.get(), 200), Items.GLOWSTONE_DUST, FluidEntry.of(ModFluids.FUELIUM.get(), 400));
     }
 
-    private static void netheriteSmithing(Consumer<FinishedRecipe> consumer, Item inputItem, Item resultItem)
+    private static void netheriteSmithing(RecipeOutput consumer, Item inputItem, Item resultItem)
     {
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(resultItem.asItem());
         // FIXME
-        SmithingTransformRecipeBuilder.smithing(Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of(inputItem), Ingredient.of(Items.NETHERITE_INGOT), RecipeCategory.MISC, resultItem).unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT)).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_smithing"));
+        SmithingTransformRecipeBuilder.smithing(Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of(inputItem), Ingredient.of(Items.NETHERITE_INGOT), RecipeCategory.MISC, resultItem).unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT)).save(consumer, ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_smithing"));
     }
 
-    private static void workstationCrafting(Consumer<FinishedRecipe> consumer, EntityType<? extends VehicleEntity> type, WorkstationIngredient ... materials)
+    private static void workstationCrafting(RecipeOutput consumer, EntityType<? extends VehicleEntity> type, WorkstationIngredient ... materials)
     {
-        ResourceLocation entityId = Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(type)); // FIXME
-        WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).save(consumer, new ResourceLocation(entityId.getNamespace(), entityId.getPath() + "_crafting"));
+        ResourceLocation entityId = Objects.requireNonNull(BuiltInRegistries.ENTITY_TYPE.getKey(type)); // FIXME
+        WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).save(consumer, ResourceLocation.fromNamespaceAndPath(entityId.getNamespace(), entityId.getPath() + "_crafting"));
     }
 
-    private static void dependantWorkstationCrafting(Consumer<FinishedRecipe> consumer, String modId, ResourceLocation entityId, WorkstationIngredient ... materials)
+    private static void dependantWorkstationCrafting(RecipeOutput consumer, String modId, ResourceLocation entityId, WorkstationIngredient ... materials)
     {
-        WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).addCondition(new ModLoadedCondition(modId)).save(consumer, new ResourceLocation(entityId.getNamespace(), entityId.getPath() + "_crafting"));
+        WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).addCondition(new ModLoadedCondition(modId)).save(consumer, ResourceLocation.fromNamespaceAndPath(entityId.getNamespace(), entityId.getPath() + "_crafting"));
     }
 
-    private static void fluidExtracting(Consumer<FinishedRecipe> consumer, ItemLike provider, FluidEntry output)
+    private static void fluidExtracting(RecipeOutput consumer, ItemLike provider, FluidEntry output)
     {
-        ResourceLocation id = Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(output.getFluid())); // FIXME
-        FluidExtractorRecipeBuilder.extracting(Ingredient.of(provider), output).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_extracting"));
+        ResourceLocation id = Objects.requireNonNull(BuiltInRegistries.FLUID.getKey(output.getFluid())); // FIXME
+        FluidExtractorRecipeBuilder.extracting(Ingredient.of(provider), output).save(consumer, ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_extracting"));
     }
 
-    private static void fluidMixing(Consumer<FinishedRecipe> consumer, FluidEntry inputOne, FluidEntry inputTwo, ItemLike provider, FluidEntry output)
+    private static void fluidMixing(RecipeOutput consumer, FluidEntry inputOne, FluidEntry inputTwo, ItemLike provider, FluidEntry output)
     {
-        ResourceLocation id = Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(output.getFluid())); // FIXME
-        FluidMixerRecipeBuilder.mixing(inputOne, inputTwo, Ingredient.of(provider), output).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_mixing"));
+        ResourceLocation id = Objects.requireNonNull(BuiltInRegistries.FLUID.getKey(output.getFluid())); // FIXME
+        FluidMixerRecipeBuilder.mixing(inputOne, inputTwo, Ingredient.of(provider), output).save(consumer, ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_mixing"));
     }
 }

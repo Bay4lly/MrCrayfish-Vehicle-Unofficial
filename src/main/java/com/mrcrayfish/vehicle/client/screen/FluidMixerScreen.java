@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import java.util.Collections;
  */
 public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContainer>
 {
-    private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/fluid_mixer.png");
+    private static final ResourceLocation GUI = ResourceLocation.parse("vehicle:textures/gui/fluid_mixer.png");
 
     private Inventory playerInventory;
     private FluidMixerTileEntity fluidMixerTileEntity;
@@ -41,7 +41,7 @@ public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContaine
     @Override
     public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(matrixStack);
+        this.renderBackground(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
 
         int startX = (this.width - this.imageWidth) / 2;

@@ -10,7 +10,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +39,7 @@ public abstract class VehiclePropertiesProvider implements DataProvider
 
     protected final void add(EntityType<? extends VehicleEntity> type, VehicleProperties.Builder builder)
     {
-        this.add(ForgeRegistries.ENTITY_TYPES.getKey(type), builder); // FIXME
+        this.add(BuiltInRegistries.ENTITY_TYPE.getKey(type), builder); // FIXME
     }
 
     protected final void add(ResourceLocation id, VehicleProperties.Builder builder)

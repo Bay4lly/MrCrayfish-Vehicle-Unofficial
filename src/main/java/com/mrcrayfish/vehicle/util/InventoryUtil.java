@@ -20,7 +20,7 @@ public class InventoryUtil
 {
     private static final Random RANDOM = new Random();
 
-    public static void writeInventoryToNBT(CompoundTag compound, String tagName, Container inventory)
+    public static void writeInventoryToNBT(CompoundTag compound, String tagName, Container inventory, net.minecraft.core.HolderLookup.Provider registries)
     {
         ListTag tagList = new ListTag();
         for(int i = 0; i < inventory.getContainerSize(); i++)
@@ -30,14 +30,14 @@ public class InventoryUtil
             {
                 CompoundTag stackTag = new CompoundTag();
                 stackTag.putByte("Slot", (byte) i);
-                stack.save(stackTag);
+                stack.save(registries, stackTag);
                 tagList.add(stackTag);
             }
         }
         compound.put(tagName, tagList);
     }
 
-    public static <T extends Container> T readInventoryToNBT(CompoundTag compound, String tagName, T t)
+    public static <T extends Container> T readInventoryToNBT(CompoundTag compound, String tagName, T t, net.minecraft.core.HolderLookup.Provider registries)
     {
         if(compound.contains(tagName, Tag.TAG_LIST))
         {
@@ -48,7 +48,7 @@ public class InventoryUtil
                 byte slot = tagCompound.getByte("Slot");
                 if(slot >= 0 && slot < t.getContainerSize())
                 {
-                    t.setItem(slot, ItemStack.of(tagCompound));
+                    t.setItem(slot, ItemStack.parseOptional(registries, tagCompound));
                 }
             }
         }
@@ -225,17 +225,6 @@ public class InventoryUtil
 
     public static boolean areItemStacksEqualIgnoreCount(ItemStack source, ItemStack target)
     {
-        if(source.getItem() != target.getItem())
-        {
-            return false;
-        }
-        else if(source.getTag() == null && target.getTag() != null)
-        {
-            return false;
-        }
-        else
-        {
-            return (source.getTag() == null || source.getTag().equals(target.getTag())) && source.areCapsCompatible(target);
-        }
+        return ItemStack.isSameItemSameComponents(source, target);
     }
 }

@@ -52,13 +52,13 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     }
 
     @Override
-    public void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(ALTITUDE_CHANGE, AltitudeChange.NONE.ordinal());
-        this.entityData.define(LIFT, 0F);
-        this.entityData.define(TRAVEL_DIRECTION, 0F);
-        this.entityData.define(TRAVEL_SPEED, 0F);
+        super.defineSynchedData(builder);
+        builder.define(ALTITUDE_CHANGE, AltitudeChange.NONE.ordinal());
+        builder.define(LIFT, 0F);
+        builder.define(TRAVEL_DIRECTION, 0F);
+        builder.define(TRAVEL_SPEED, 0F);
     }
 
     @Override
@@ -216,14 +216,14 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
             if(this.getAltitudeChange() != altitudeChange)
             {
                 this.setAltitudeChange(altitudeChange);
-                PacketHandler.instance.sendToServer(new MessageAltitude(altitudeChange));
+                PacketHandler.sendToServer(new MessageAltitude(altitudeChange));
             }
 
             float travelDirection = VehicleHelper.getTravelDirection(this);
             float travelSpeed = VehicleHelper.getTravelSpeed(this);
             this.setTravelDirection(travelDirection);
             this.setTravelSpeed(travelSpeed);
-            PacketHandler.instance.sendToServer(new MessageTravelProperties(travelSpeed, travelDirection));
+            PacketHandler.sendToServer(new MessageTravelProperties(travelSpeed, travelDirection));
         }
 
         if(this.isFlying())
@@ -248,7 +248,6 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     @Override
     protected void updateTurning() {}
 
-    @Override
     public double getPassengersRidingOffset()
     {
         return 0;

@@ -6,28 +6,21 @@ import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 
-import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -46,27 +39,28 @@ public class JerryCanItem extends Item
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flagIn)
     {
         if(Screen.hasShiftDown())
         {
             tooltip.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info"), 150));
         }
-        else if(worldIn != null)
+        else
         {
-            stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(handler ->
+            IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+            if(handler != null)
             {
                 FluidStack fluidStack = handler.getFluidInTank(0);
                 if(!fluidStack.isEmpty())
                 {
-                    tooltip.add(Component.translatable(fluidStack.getTranslationKey()).withStyle(ChatFormatting.BLUE));
+                    tooltip.add(fluidStack.getDisplayName().copy().withStyle(ChatFormatting.BLUE));
                     tooltip.add(Component.literal(this.getCurrentFuel(stack) + " / " + this.capacitySupplier.get() + "mb").withStyle(ChatFormatting.GRAY));
                 }
                 else
                 {
                     tooltip.add(Component.translatable("item.vehicle.jerry_can.empty").withStyle(ChatFormatting.RED));
                 }
-            });
+            }
             tooltip.add(Component.literal(ChatFormatting.YELLOW + I18n.get("vehicle.info_help")));
         }
     }
@@ -78,26 +72,21 @@ public class JerryCanItem extends Item
         BlockEntity tileEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if(tileEntity != null && context.getPlayer() != null)
         {
-            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, context.getClickedFace());
-            if(lazyOptional.isPresent())
+            IFluidHandler blockHandler = context.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, context.getClickedPos(), context.getClickedFace());
+            if(blockHandler != null)
             {
-                Optional<IFluidHandler> optional = lazyOptional.resolve();
-                if(optional.isPresent())
+                IFluidHandlerItem itemHandler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+                if(itemHandler != null)
                 {
-                    IFluidHandler source = optional.get();
-                    Optional<IFluidHandlerItem> itemOptional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
-                    if(itemOptional.isPresent())
+                    if(context.getPlayer().isCrouching())
                     {
-                        if(context.getPlayer().isCrouching())
-                        {
-                            FluidUtils.transferFluid(source, itemOptional.get(), this.getFillRate());
-                        }
-                        else
-                        {
-                            FluidUtils.transferFluid(itemOptional.get(), source, this.getFillRate());
-                        }
-                        return InteractionResult.SUCCESS;
+                        FluidUtils.transferFluid(blockHandler, itemHandler, this.getFillRate());
                     }
+                    else
+                    {
+                        FluidUtils.transferFluid(itemHandler, blockHandler, this.getFillRate());
+                    }
+                    return InteractionResult.SUCCESS;
                 }
             }
         }
@@ -106,8 +95,9 @@ public class JerryCanItem extends Item
 
     public int getCurrentFuel(ItemStack stack)
     {
-        Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
-        return optional.map(handler -> handler.getFluidInTank(0).getAmount()).orElse(0);
+        IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+        if(handler != null) return handler.getFluidInTank(0).getAmount();
+        return 0;
     }
 
     public int getCapacity()
@@ -140,24 +130,19 @@ public class JerryCanItem extends Item
         {
             return 0;
         }
-        Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
-        return optional.map(handler -> {
+        IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+        if(handler != null)
+        {
             int color = IClientFluidTypeExtensions.of(handler.getFluidInTank(0).getFluid()).getTintColor();
             if(color == 0xFFFFFFFF) color = FluidUtils.getAverageFluidColor(handler.getFluidInTank(0).getFluid());
             return color;
-        }).orElse(0);
+        }
+        return 0;
     }
 
     @Override
     public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged)
     {
         return slotChanged;
-    }
-
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
-    {
-        return new FluidHandlerItemStack(stack, this.capacitySupplier.get());
     }
 }

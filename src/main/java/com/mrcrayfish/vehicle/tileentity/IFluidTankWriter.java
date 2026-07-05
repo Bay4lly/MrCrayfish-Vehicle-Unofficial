@@ -1,5 +1,6 @@
 package com.mrcrayfish.vehicle.tileentity;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -7,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
  */
 public interface IFluidTankWriter
 {
-    void writeTanks(CompoundTag compound);
+    void writeTanks(HolderLookup.Provider registries, CompoundTag compound);
 
     boolean areTanksEmpty();
 }

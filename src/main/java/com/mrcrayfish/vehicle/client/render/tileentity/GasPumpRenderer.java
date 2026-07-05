@@ -297,15 +297,15 @@ public class GasPumpRenderer implements BlockEntityRenderer<GasPumpTileEntity>
     {
         Vector4f vec = new Vector4f(0.0F, 0.0F, 0.0F, 1.0F);
         pos.transform(vec);
-        buffer.vertex(parent, vec.x(), vec.y(), vec.z()).color(red, green, blue, 1.0F).uv2(light).endVertex();
+        buffer.addVertex(parent, vec.x(), vec.y(), vec.z()).setColor(red, green, blue, 1.0F).setUv2(light & 0xFFFF, light >> 16);
     }
 
     private boolean isSlimModel(Player player)
     {
         if(player instanceof AbstractClientPlayer)
         {
-            String skinType = ((AbstractClientPlayer) player).getModelName();
-            return skinType.equals("slim");
+            net.minecraft.client.resources.PlayerSkin.Model model = ((AbstractClientPlayer) player).getSkin().model();
+            return model == net.minecraft.client.resources.PlayerSkin.Model.SLIM;
         }
         return false;
     }

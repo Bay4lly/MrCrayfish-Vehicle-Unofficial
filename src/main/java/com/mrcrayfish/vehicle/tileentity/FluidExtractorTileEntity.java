@@ -27,17 +27,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -77,7 +74,7 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
                 case 2:
                     return fuelMaxProgress;
                 case 3:
-                    return ForgeRegistries.FLUIDS.getKey(tank.getFluid().getFluid()).hashCode(); // FIXME
+                    return BuiltInRegistries.FLUID.getKey(tank.getFluid().getFluid()).hashCode(); // FIXME
                 case 4:
                     return tank.getFluidAmount();
             }
@@ -101,7 +98,7 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
                     updateFluid(tank, value);
                     break;
                 case 4:
-                    if(!tank.isEmpty() || tank.getFluid().getRawFluid() != Fluids.EMPTY)
+                    if(!tank.isEmpty() || tank.getFluid().getFluid() != Fluids.EMPTY)
                     {
                         tank.getFluid().setAmount(value);
                     }
@@ -177,7 +174,7 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
     {
         if(!fuel.isEmpty() && this.remainingFuel == 0 && this.canFillWithFluid(source))
         {
-            this.fuelMaxProgress = ForgeHooks.getBurnTime(fuel, null);
+            this.fuelMaxProgress = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);
             this.remainingFuel = this.fuelMaxProgress;
             this.shrinkItem(SLOT_FUEL_SOURCE);
         }
@@ -286,7 +283,7 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
     {
         if(index == 0)
         {
-            return ForgeHooks.getBurnTime(stack, null) > 0;
+            return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
         }
         else if(index == 1)
         {
@@ -322,9 +319,9 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("ExtractionProgress", Tag.TAG_INT))
         {
             this.extractionProgress = compound.getInt("ExtractionProgress");
@@ -340,7 +337,7 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
         if(compound.contains("Items", Tag.TAG_LIST))
         {
             this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(compound, this.inventory);
+            ContainerHelper.loadAllItems(compound, this.inventory, registries);
         }
         if(compound.contains("CustomName", Tag.TAG_STRING))
         {
@@ -349,14 +346,14 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         compound.putInt("ExtractionProgress", this.extractionProgress);
         compound.putInt("RemainingFuel", this.remainingFuel);
         compound.putInt("FuelMaxProgress", this.fuelMaxProgress);
 
-        ContainerHelper.saveAllItems(compound, this.inventory);
+        ContainerHelper.saveAllItems(compound, this.inventory, registries);
 
         if(this.hasCustomName())
         {
@@ -406,36 +403,19 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
 
     public void updateFluid(FluidTank tank, int fluidHash)
     {
-        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> ForgeRegistries.FLUIDS.getKey(fluid).hashCode() == fluidHash).findFirst(); // FIXME
+        Optional<Fluid> optional = BuiltInRegistries.FLUID.stream().filter(fluid -> BuiltInRegistries.FLUID.getKey(fluid).hashCode() == fluidHash).findFirst();
         optional.ifPresent(fluid -> tank.setFluid(new FluidStack(fluid, tank.getFluidAmount())));
     }
 
     public Optional<FluidExtractorRecipe> getRecipe()
     {
-        return this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUID_EXTRACTOR.get(), this, this.level);
+        return this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUID_EXTRACTOR.get(), new net.minecraft.world.item.crafting.SingleRecipeInput(this.getItem(SLOT_FLUID_SOURCE)), this.level).map(net.minecraft.world.item.crafting.RecipeHolder::value);
     }
 
     public boolean isValidIngredient(ItemStack ingredient)
     {
-        List<FluidExtractorRecipe> recipes = this.level.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == ModRecipeTypes.FLUID_EXTRACTOR.get()).map(recipe -> (FluidExtractorRecipe) recipe).collect(Collectors.toList());
-        return recipes.stream().anyMatch(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, recipe.getIngredient()));
-    }
-
-    private final net.minecraftforge.common.util.LazyOptional<?> itemInteractionHandler = net.minecraftforge.common.util.LazyOptional.of(this::createUnSidedInteractionHandler);
-
-    @Nonnull
-    protected IItemHandler createUnSidedInteractionHandler()
-    {
-        return new net.minecraftforge.items.wrapper.InvWrapper(this);
-    }
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
-    {
-        if (!this.remove && cap == ForgeCapabilities.ITEM_HANDLER )
-            return this.itemInteractionHandler.cast();
-        return super.getCapability(cap, side);
+        java.util.Collection<net.minecraft.world.item.crafting.RecipeHolder<FluidExtractorRecipe>> recipes = this.level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FLUID_EXTRACTOR.get());
+        return recipes.stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).anyMatch(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, recipe.getIngredient()));
     }
 
     private void setExtracting(boolean state)

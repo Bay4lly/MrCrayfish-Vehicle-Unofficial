@@ -35,12 +35,13 @@ import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
@@ -490,8 +491,8 @@ public class EntityRayTracer
     {
         for(BakedQuad quad : list)
         {
-            int size = DefaultVertexFormat.BLOCK.getIntegerSize();
             int[] data = quad.getVertices();
+            int size = data.length / 4;
             // Two triangles that represent the BakedQuad
             float[] triangle1 = new float[9];
             float[] triangle2 = new float[9];
@@ -658,13 +659,8 @@ public class EntityRayTracer
      * @param event tick event
      */
     @SubscribeEvent
-    public void rayTraceEntitiesContinuously(TickEvent.ClientTickEvent event)
+    public void rayTraceEntitiesContinuously(ClientTickEvent.Pre event)
     {
-        if(event.phase != TickEvent.Phase.START)
-        {
-            return;
-        }
-
         if(this.continuousInteraction == null || Minecraft.getInstance().player == null)
         {
             return;
@@ -690,13 +686,8 @@ public class EntityRayTracer
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Pre event)
     {
-        if(event.phase == TickEvent.Phase.END)
-        {
-            return;
-        }
-
         Minecraft mc = Minecraft.getInstance();
         if(mc.player == null)
         {
@@ -770,7 +761,7 @@ public class EntityRayTracer
     @SuppressWarnings("unchecked")
     private <T extends VehicleEntity> RayTraceResultRotated rayTraceEntities(boolean rightClick)
     {
-        float reach = Minecraft.getInstance().gameMode.getPickRange();
+        float reach = (float) Minecraft.getInstance().player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE);
         Vec3 eyeVec = Minecraft.getInstance().player.getEyePosition(1.0F);
         Vec3 forwardVec = eyeVec.add(Minecraft.getInstance().player.getViewVector(1.0F).scale(reach));
         AABB box = new AABB(eyeVec, eyeVec).inflate(reach);
@@ -798,7 +789,7 @@ public class EntityRayTracer
             }
             else
             {
-                VehicleMod.LOGGER.warn("The vehicle '" + ForgeRegistries.ENTITY_TYPES.getKey(type) + "' does not have any registered ray trace transforms.");
+                VehicleMod.LOGGER.warn("The vehicle '" + BuiltInRegistries.ENTITY_TYPE.getKey(type) + "' does not have any registered ray trace transforms.");
             }
         }
         if(closestRayTraceResult != null)
@@ -1034,19 +1025,13 @@ public class EntityRayTracer
             matrixStack.pushPose();
             matrixStack.mulPose(Axis.YP.rotationDegrees(-yaw));
 
-            RenderSystem.getModelViewStack().pushPose();
-            RenderSystem.getModelViewStack().mulPoseMatrix(matrixStack.last().pose());
             RenderSystem.lineWidth(Math.max(2.0F, (float)Minecraft.getInstance().getWindow().getWidth() / 1920.0F * 2.0F));
-            /*RenderSystem.disableTexture();*/ // FIXME
             RenderSystem.enableDepthTest();
 
             Tesselator tessellator = Tesselator.getInstance();
-            BufferBuilder buffer = tessellator.getBuilder();
-            this.renderRayTraceTriangles(entity, tessellator, buffer);
+            this.renderRayTraceTriangles(entity, tessellator, matrixStack.last().pose());
 
             RenderSystem.disableDepthTest();
-            /*RenderSystem.enableTexture();*/ // FIXME
-            RenderSystem.getModelViewStack().popPose();
 
             // Draw interaction boxes
             VertexConsumer builder = renderTypeBuffer.getBuffer(RenderType.lines());
@@ -1063,9 +1048,9 @@ public class EntityRayTracer
      * 
      * @param entity raytraced entity
      * @param tessellator rendered plane tiler
-     * @param buffer tessellator's vertex buffer
+     * @param pose transformation matrix
      */
-    private <T extends VehicleEntity> void renderRayTraceTriangles(T entity, Tesselator tessellator, BufferBuilder buffer)
+    private <T extends VehicleEntity> void renderRayTraceTriangles(T entity, Tesselator tessellator, Matrix4f pose)
     {
         EntityType<T> type = (EntityType<T>) entity.getType();
         this.initializeTransforms(type, false);
@@ -1079,7 +1064,7 @@ public class EntityRayTracer
                 {
                     for(TriangleRayTrace triangle : entry.getValue().getTriangles(entry.getKey(), entity))
                     {
-                        triangle.draw(tessellator, buffer, 1, 0, 0, 0.4F);
+                        triangle.draw(tessellator, pose, 1, 0, 0, 0.4F);
                     }
                 }
             }
@@ -1090,8 +1075,8 @@ public class EntityRayTracer
     {
         Matrix4f pose = matrixStack.last().pose();
         shape.forAllEdges((minX, minY, minZ, maxX, maxY, maxZ) -> {
-            builder.vertex(pose, (float) minX, (float) minY, (float) minZ).color(red, green, blue, alpha).normal(0, 1, 0).endVertex();
-            builder.vertex(pose, (float) maxX, (float) maxY, (float) maxZ).color(red, green, blue, alpha).normal(0, 1, 0).endVertex();
+            builder.addVertex(pose, (float) minX, (float) minY, (float) minZ).setColor(red, green, blue, alpha).setNormal(0, 1, 0);
+            builder.addVertex(pose, (float) maxX, (float) maxY, (float) maxZ).setColor(red, green, blue, alpha).setNormal(0, 1, 0);
         });
     }
 
@@ -1182,13 +1167,13 @@ public class EntityRayTracer
             return data;
         }
 
-        public void draw(Tesselator tessellator, BufferBuilder buffer, float red, float green, float blue, float alpha)
+        public void draw(Tesselator tessellator, Matrix4f pose, float red, float green, float blue, float alpha)
         {
-            buffer.begin(Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-            buffer.vertex(data[6], data[7], data[8]).color(red, green, blue, alpha).endVertex();
-            buffer.vertex(data[0], data[1], data[2]).color(red, green, blue, alpha).endVertex();
-            buffer.vertex(data[3], data[4], data[5]).color(red, green, blue, alpha).endVertex();
-            tessellator.end();
+            BufferBuilder buffer = tessellator.begin(Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            buffer.addVertex(pose, data[6], data[7], data[8]).setColor(red, green, blue, alpha);
+            buffer.addVertex(pose, data[0], data[1], data[2]).setColor(red, green, blue, alpha);
+            buffer.addVertex(pose, data[3], data[4], data[5]).setColor(red, green, blue, alpha);
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
         }
     }
 
@@ -1489,7 +1474,7 @@ public class EntityRayTracer
         {
             if(result.getPartHit().getModel() == SpecialModels.KEY_HOLE)
             {
-                PacketHandler.instance.sendToServer(new MessageInteractKey((Entity) this));
+                PacketHandler.sendToServer(new MessageInteractKey((Entity) this));
                 return true;
             }
 
@@ -1510,7 +1495,7 @@ public class EntityRayTracer
                     {
                         if(player.isCrouching() && !player.isSpectator())
                         {
-                            PacketHandler.instance.sendToServer(new MessagePickupVehicle((Entity) this));
+                            PacketHandler.sendToServer(new MessagePickupVehicle((Entity) this));
                             return true;
                         }
                         if(!isContinuous)

@@ -6,8 +6,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * Author: MrCrayfish
@@ -15,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class StorageScreen extends AbstractContainerScreen<StorageContainer>
 {
-    private static final ResourceLocation CHEST_GUI_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
+    private static final ResourceLocation CHEST_GUI_TEXTURE = ResourceLocation.parse("textures/gui/container/generic_54.png");
     private final Inventory playerInventory;
     private final int inventoryRows;
 
@@ -30,7 +30,7 @@ public class StorageScreen extends AbstractContainerScreen<StorageContainer>
     @Override
     public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(matrixStack);
+        this.renderBackground(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderTooltip(matrixStack, mouseX, mouseY);
     }

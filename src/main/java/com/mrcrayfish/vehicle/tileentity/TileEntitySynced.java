@@ -25,9 +25,9 @@ public class TileEntitySynced extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries)
     {
-        return this.saveWithId();
+        return this.saveWithId(registries);
     }
 
     @Nullable
@@ -38,12 +38,12 @@ public class TileEntitySynced extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(final Connection net, final ClientboundBlockEntityDataPacket pkt)
+    public void onDataPacket(final Connection net, final ClientboundBlockEntityDataPacket pkt, net.minecraft.core.HolderLookup.Provider registries)
     {
         CompoundTag nbt = pkt.getTag();
         if(nbt != null)
         {
-            this.load(nbt);
+            this.loadAdditional(nbt, registries);
         }
     }
 }

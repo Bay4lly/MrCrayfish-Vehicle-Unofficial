@@ -9,8 +9,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Author: MrCrayfish
@@ -20,10 +20,10 @@ public class SprayCanHandler
     private int lastSlot = -1;
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
         Player player = Minecraft.getInstance().player;
-        if(event.phase != TickEvent.Phase.END || player == null)
+        if(player == null)
             return;
 
         int slot = player.getInventory().selected;

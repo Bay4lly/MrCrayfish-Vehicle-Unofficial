@@ -27,8 +27,8 @@ public class BakedModelSteepRamp
     public BakedModelSteepRamp(VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter)
     {
         this.format = format;
-        this.mainTexture = bakedTextureGetter.construct(new ResourceLocation("minecraft", "blocks/concrete_gray"));
-        this.rampTexture = bakedTextureGetter.construct(new ResourceLocation("vehicle", "blocks/boost_pad"));
+        this.mainTexture = bakedTextureGetter.construct(ResourceLocation.fromNamespaceAndPath("minecraft", "blocks/concrete_gray"));
+        this.rampTexture = bakedTextureGetter.construct(ResourceLocation.fromNamespaceAndPath("vehicle", "blocks/boost_pad"));
     }
 
     @Override

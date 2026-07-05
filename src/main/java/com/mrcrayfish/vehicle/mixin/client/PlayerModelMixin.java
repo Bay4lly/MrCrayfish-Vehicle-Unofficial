@@ -119,8 +119,8 @@ class PlayerModelMixin<T extends LivingEntity>
             return;
 
         PlayerModel<Player> self = (PlayerModel<Player>) (Object) this;
-        PlayerModelHandler.onSetupAngles((Player) entityIn, self, Minecraft.getInstance().getDeltaFrameTime());
-        HeldVehicleHandler.onSetupAngles((Player) entityIn, self, Minecraft.getInstance().getDeltaFrameTime());
+        PlayerModelHandler.onSetupAngles((Player) entityIn, self, Minecraft.getInstance().getTimer().getRealtimeDeltaTicks());
+        HeldVehicleHandler.onSetupAngles((Player) entityIn, self, Minecraft.getInstance().getTimer().getRealtimeDeltaTicks());
         this.vehicleSetupRotationAngles();
     }
 

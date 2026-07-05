@@ -25,12 +25,12 @@ public abstract class ObjectEntityBlock extends BaseEntityBlock
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter reader, List<Component> list, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
-        appendHoverText(this, stack, reader, list, flag);
+        appendHoverText(this, stack, context, list, flag);
     }
 
-    public static void appendHoverText(Block block, ItemStack stack, @Nullable BlockGetter reader, List<Component> list, TooltipFlag flag)
+    public static void appendHoverText(Block block, ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {

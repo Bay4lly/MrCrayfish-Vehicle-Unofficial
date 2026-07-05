@@ -27,7 +27,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -133,8 +133,8 @@ public class VehicleHelper
                     }
                 }
 
-                boolean forward = controller.getButtonsStates().getState(Buttons.A);
-                boolean reverse = controller.getButtonsStates().getState(Buttons.B);
+                boolean forward = controller.getTrackedButtonStates().getState(Buttons.A);
+                boolean reverse = controller.getTrackedButtonStates().getState(Buttons.B);
                 if(forward && reverse)
                 {
                     return PoweredVehicleEntity.AccelerationDirection.CHARGING;
@@ -184,11 +184,11 @@ public class VehicleHelper
                 {
                     return PoweredVehicleEntity.TurnDirection.LEFT;
                 }
-                if(controller.getButtonsStates().getState(Buttons.DPAD_RIGHT))
+                if(controller.getTrackedButtonStates().getState(Buttons.DPAD_RIGHT))
                 {
                     return PoweredVehicleEntity.TurnDirection.RIGHT;
                 }
-                if(controller.getButtonsStates().getState(Buttons.DPAD_LEFT))
+                if(controller.getTrackedButtonStates().getState(Buttons.DPAD_LEFT))
                 {
                     return PoweredVehicleEntity.TurnDirection.LEFT;
                 }
@@ -258,7 +258,7 @@ public class VehicleHelper
             Controller controller = Controllable.getController();
             if(controller != null)
             {
-                if(controller.getButtonsStates().getState(Buttons.RIGHT_BUMPER))
+                if(controller.getTrackedButtonStates().getState(Buttons.RIGHT_BUMPER))
                 {
                     return true;
                 }
@@ -292,8 +292,8 @@ public class VehicleHelper
             Controller controller = Controllable.getController();
             if(controller != null)
             {
-                flapUp |= controller.getButtonsStates().getState(Buttons.RIGHT_BUMPER);
-                flapDown |= controller.getButtonsStates().getState(Buttons.LEFT_BUMPER);
+                flapUp |= controller.getTrackedButtonStates().getState(Buttons.RIGHT_BUMPER);
+                flapDown |= controller.getTrackedButtonStates().getState(Buttons.LEFT_BUMPER);
             }
         }
         return PlaneEntity.FlapDirection.fromInput(flapUp, flapDown);
@@ -308,8 +308,8 @@ public class VehicleHelper
             Controller controller = Controllable.getController();
             if(controller != null)
             {
-                flapUp |= controller.getButtonsStates().getState(Buttons.RIGHT_BUMPER);
-                flapDown |= controller.getButtonsStates().getState(Buttons.LEFT_BUMPER);
+                flapUp |= controller.getTrackedButtonStates().getState(Buttons.RIGHT_BUMPER);
+                flapDown |= controller.getTrackedButtonStates().getState(Buttons.LEFT_BUMPER);
             }
         }
         return HelicopterEntity.AltitudeChange.fromInput(flapUp, flapDown);

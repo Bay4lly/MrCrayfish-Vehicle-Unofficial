@@ -630,7 +630,7 @@ public class VehiclePropertiesGen extends VehiclePropertiesProvider
                 .setDisplayPosition(PartPosition.create(0.0, 0.0, -0.15, 0.0, 0.0, 0.0, 1.35))
                 .setColored(true));
 
-        this.add(new ResourceLocation("vehicle", "bath"), VehicleProperties.builder()
+        this.add(ResourceLocation.fromNamespaceAndPath("vehicle", "bath"), VehicleProperties.builder()
                 .setBodyPosition(PartPosition.create(1.0))
                 .setDisplayPosition(PartPosition.create(0.0, 0.0, -0.25, 0.0, 0.0, 0.0, 1.5))
                 .setHeldOffset(4.0, 3.5, 0.0)
@@ -638,7 +638,7 @@ public class VehiclePropertiesGen extends VehiclePropertiesProvider
                 .addSeat(Seat.of(0.0, 0.0, 0.0, true))
                 .setEngineType(EngineType.NONE));
 
-        this.add(new ResourceLocation("vehicle", "sofa_car"), VehicleProperties.builder()
+        this.add(ResourceLocation.fromNamespaceAndPath("vehicle", "sofa_car"), VehicleProperties.builder()
                 .setAxleOffset(-1.5F)
                 .setBodyPosition(PartPosition.create(0.0, -0.0625, 0.0, 0.0, 0.0, 0.0, 1.0))
                 .setFuelPortPosition(PartPosition.create(0.0, 2.0, 8.0, 0.0, 0.0, 0.0, 0.5))
@@ -673,7 +673,7 @@ public class VehiclePropertiesGen extends VehiclePropertiesProvider
                 .setEngineType(EngineType.SMALL_MOTOR)
                 .setCanChangeWheels(true));
 
-        this.add(new ResourceLocation("vehicle", "sofacopter"), VehicleProperties.builder()
+        this.add(ResourceLocation.fromNamespaceAndPath("vehicle", "sofacopter"), VehicleProperties.builder()
                 .setBodyPosition(PartPosition.create(0.0, 0.0, 0.0625, 0.0, 0.0, 0.0, 1.0))
                 .setFuelPortPosition(PartPosition.create(0.0, 1.5, 8.0, 0.0, 0.0, 0.0, 0.45))
                 .setKeyPortPosition(PartPosition.create(-9.25, 8.0, 5.0, 0.0, 0.0, 0.0, 0.8))

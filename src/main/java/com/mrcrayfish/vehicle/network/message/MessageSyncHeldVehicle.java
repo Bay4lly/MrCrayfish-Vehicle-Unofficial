@@ -1,18 +1,30 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.client.network.ClientPlayHandler;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent.Context;
 
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
 {
+    public static final CustomPacketPayload.Type<MessageSyncHeldVehicle> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "sync_held_vehicle"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageSyncHeldVehicle> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageSyncHeldVehicle().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
     private int entityId;
     private CompoundTag vehicleTag;
 
@@ -25,24 +37,24 @@ public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
     }
 
     @Override
-    public void encode(MessageSyncHeldVehicle message, FriendlyByteBuf buffer)
+    public void encode(MessageSyncHeldVehicle message, RegistryFriendlyByteBuf buffer)
     {
         buffer.writeVarInt(message.entityId);
         buffer.writeNbt(message.vehicleTag);
     }
 
     @Override
-    public MessageSyncHeldVehicle decode(FriendlyByteBuf buffer)
+    public MessageSyncHeldVehicle decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageSyncHeldVehicle(buffer.readVarInt(), buffer.readNbt());
     }
 
     @Override
-    public void handle(MessageSyncHeldVehicle message, Supplier<Context> supplier)
+    public void handle(MessageSyncHeldVehicle message, IPayloadContext context)
     {
-        if(supplier.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT)
+        if(context.flow().isClientbound())
         {
-            IMessage.enqueueTask(supplier, () -> ClientPlayHandler.handleSyncHeldVehicle(message));
+            IMessage.enqueueTask(context, () -> ClientPlayHandler.handleSyncHeldVehicle(message));
         }
     }
 

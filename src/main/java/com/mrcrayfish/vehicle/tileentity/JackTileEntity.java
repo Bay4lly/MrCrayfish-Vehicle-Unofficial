@@ -140,9 +140,4 @@ public class JackTileEntity extends TileEntitySynced
         return (float) this.liftProgress / (float) MAX_LIFT_PROGRESS;
     }
 
-    @Override
-    public AABB getRenderBoundingBox()
-    {
-        return INFINITE_EXTENT_AABB;
-    }
 }

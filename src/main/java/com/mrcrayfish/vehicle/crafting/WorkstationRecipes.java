@@ -16,7 +16,7 @@ public class WorkstationRecipes
     @Nullable
     public static WorkstationRecipe getRecipe(EntityType<?> entityType, Level world)
     {
-        List<WorkstationRecipe> recipes = world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == ModRecipeTypes.WORKSTATION.get()).map(recipe -> (WorkstationRecipe) recipe).collect(Collectors.toList());
+        List<WorkstationRecipe> recipes = world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.value().getType() == ModRecipeTypes.WORKSTATION.get()).map(recipe -> (WorkstationRecipe) recipe.value()).collect(Collectors.toList());
         return recipes.stream().filter(recipe -> recipe.getVehicle() == entityType).findFirst().orElse(null);
     }
 }

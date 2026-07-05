@@ -16,6 +16,7 @@ import com.mrcrayfish.vehicle.network.message.MessageThrowVehicle;
 import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
 import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
@@ -33,16 +34,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.MissingMappingsEvent;
-import net.minecraftforge.registries.MissingMappingsEvent.Mapping;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -80,47 +78,7 @@ public class CommonEvents
         IGNORE_ENTITIES = builder.build();
     }
 
-    @SubscribeEvent
-    public void onMissingItem(MissingMappingsEvent event)
-    {
-        List<Mapping<Item>> mappings = event.getMappings(ForgeRegistries.ITEMS.getRegistryKey(), Reference.MOD_ID);
-        for(Mapping<Item> missing : mappings)
-        {
-            // FIXME
-            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_ITEMS.contains(missing.getKey().getPath()))
-            {
-                missing.ignore();
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public void onMissingSound(MissingMappingsEvent event)
-    {
-        List<Mapping<SoundEvent>> mappings = event.getMappings(ForgeRegistries.SOUND_EVENTS.getRegistryKey(), Reference.MOD_ID);
-        for(Mapping<SoundEvent> missing : mappings)
-        {
-            // FIXME
-            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_SOUNDS.contains(missing.getKey().getPath()))
-            {
-                missing.ignore();
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public void onMissingEntity(MissingMappingsEvent event)
-    {
-        List<Mapping<EntityType<?>>> mappings = event.getMappings(ForgeRegistries.ENTITY_TYPES.getRegistryKey(), Reference.MOD_ID);
-        for(Mapping<EntityType<?>> missing : mappings)
-        {
-            // FIXME
-            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_ENTITIES.contains(missing.getKey().getPath()))
-            {
-                missing.ignore();
-            }
-        }
-    }
+    // MissingMappingsEvent removed in NeoForge 1.21.1; use datamap system instead
 
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent.EntityInteractSpecific event)
@@ -317,35 +275,51 @@ public class CommonEvents
     }
 
     @SubscribeEvent
-    public void onPlayerInteract(PlayerInteractEvent event)
+    public void onPlayerInteractRightClickEmpty(PlayerInteractEvent.RightClickEmpty event)
     {
         if(event.getHand() == InteractionHand.OFF_HAND)
             return;
-
         Level world = event.getLevel();
         if(world.isClientSide)
         {
-            if(event instanceof PlayerInteractEvent.RightClickEmpty || event instanceof PlayerInteractEvent.RightClickItem)
+            Player player = event.getEntity();
+            float reach = (float) player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE).getValue();
+            reach = player.isCreative() ? reach : reach - 0.5F;
+            HitResult result = player.pick(reach, 0.0F, false);
+            if(result.getType() == HitResult.Type.BLOCK)
+                return;
+            if(HeldVehicleDataHandler.isHoldingVehicle(player))
             {
-                Player player = event.getEntity();
-                float reach = (float) player.getAttribute(ForgeMod.BLOCK_REACH.get()).getValue(); // FIXME
-                reach = player.isCreative() ? reach : reach - 0.5F;
-                HitResult result = player.pick(reach, 0.0F, false);
-                if(result.getType() == HitResult.Type.BLOCK)
-                    return;
-
-                if(HeldVehicleDataHandler.isHoldingVehicle(player))
+                if(player.isCrouching())
                 {
-                    if(player.isCrouching())
-                    {
-                        PacketHandler.instance.sendToServer(new MessageThrowVehicle());
-                    }
-                    if(event.isCancelable())
-                    {
-                        event.setCanceled(true);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                    }
+                    PacketHandler.sendToServer(new MessageThrowVehicle());
                 }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerInteractRightClickItem(PlayerInteractEvent.RightClickItem event)
+    {
+        if(event.getHand() == InteractionHand.OFF_HAND)
+            return;
+        Level world = event.getLevel();
+        if(world.isClientSide)
+        {
+            Player player = event.getEntity();
+            float reach = (float) player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE).getValue();
+            reach = player.isCreative() ? reach : reach - 0.5F;
+            HitResult result = player.pick(reach, 0.0F, false);
+            if(result.getType() == HitResult.Type.BLOCK)
+                return;
+            if(HeldVehicleDataHandler.isHoldingVehicle(player))
+            {
+                if(player.isCrouching())
+                {
+                    PacketHandler.sendToServer(new MessageThrowVehicle());
+                }
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
             }
         }
     }
@@ -353,7 +327,7 @@ public class CommonEvents
     private static String getEntityString(Entity entity)
     {
         // FIXME
-        return ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        return BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
     }
 
     @SubscribeEvent
@@ -390,13 +364,11 @@ public class CommonEvents
     }
 
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event)
+    public void onPlayerTick(PlayerTickEvent.Post event)
     {
-        if(event.phase == TickEvent.Phase.END)
-        {
-            Player player = event.player;
-            Level world = player.level();
-            if(!world.isClientSide())
+        Player player = event.getEntity();
+        Level world = player.level();
+        if(!world.isClientSide())
             {
                 UUID uuid = player.getUUID();
                 if(player.isCrouching())
@@ -437,7 +409,6 @@ public class CommonEvents
                     ModDataKeys.GAS_PUMP.setValue(player, Optional.empty());
                 }
             }
-        }
     }
 
     @SubscribeEvent
@@ -460,10 +431,10 @@ public class CommonEvents
         else if(event.getItemStack().getItem() instanceof FluidPipeItem)
         {
             BlockEntity relativeTileEntity = event.getLevel().getBlockEntity(event.getPos());
-            if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, event.getFace()).isPresent())
+            if(relativeTileEntity != null && event.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, event.getPos(), event.getFace()) != null)
             {
-                event.setUseBlock(Event.Result.DENY);
-                event.setUseItem(Event.Result.ALLOW);
+                event.setUseBlock(net.neoforged.neoforge.common.util.TriState.FALSE);
+                event.setUseItem(net.neoforged.neoforge.common.util.TriState.TRUE);
             }
         }
     }

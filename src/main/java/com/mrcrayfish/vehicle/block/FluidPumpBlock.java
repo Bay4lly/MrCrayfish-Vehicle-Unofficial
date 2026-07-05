@@ -83,9 +83,9 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult result)
     {
-        if(super.use(state, world, pos, player, hand, result) == InteractionResult.SUCCESS)
+        if(super.useWithoutItem(state, world, pos, player, result) == InteractionResult.SUCCESS)
         {
             return InteractionResult.SUCCESS;
         }
@@ -103,7 +103,7 @@ public class FluidPumpBlock extends FluidPipeBlock
                 }*/
 
                 Vec3 localHitVec = result.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ());
-                if(player.getItemInHand(hand).getItem() == ModItems.WRENCH.get() && this.isLookingAtHousing(state, localHitVec))
+                if(player.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND).getItem() == ModItems.WRENCH.get() && this.isLookingAtHousing(state, localHitVec))
                 {
                     pumpTileEntity.cyclePowerMode();
                     this.invalidatePipeNetwork(world, pos);

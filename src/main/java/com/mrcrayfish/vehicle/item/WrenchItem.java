@@ -20,7 +20,7 @@ public class WrenchItem extends Item
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {

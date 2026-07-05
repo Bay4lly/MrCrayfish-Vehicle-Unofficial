@@ -8,12 +8,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 
 /**
  * Author: MrCrayfish
  */
-public abstract class BlazeJuice extends ForgeFlowingFluid
+public abstract class BlazeJuice extends BaseFlowingFluid
 {
     public BlazeJuice()
     {

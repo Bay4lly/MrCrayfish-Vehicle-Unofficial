@@ -18,9 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -216,8 +215,7 @@ public class PumpTileEntity extends PipeTileEntity
                         continue;
 
                     BlockPos relativePos = pos.relative(direction);
-                    BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-                    if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
+                    if(this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) != null)
                     {
                         this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
                     }
@@ -233,8 +231,7 @@ public class PumpTileEntity extends PipeTileEntity
                 continue;
 
             BlockPos relativePos = this.worldPosition.relative(direction);
-            BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-            if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
+            if(this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) != null)
             {
                 this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
             }
@@ -264,12 +261,8 @@ public class PumpTileEntity extends PipeTileEntity
                 BlockEntity tileEntity = world.getBlockEntity(pair.getLeft());
                 if(tileEntity != null)
                 {
-                    LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, pair.getRight());
-                    if(lazyOptional.isPresent())
-                    {
-                        Optional<IFluidHandler> handler = lazyOptional.resolve();
-                        handler.ifPresent(handlers::add);
-                    }
+                    IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, pair.getLeft(), pair.getRight());
+                    if(handler != null) handlers.add(handler);
                 }
             }
         });
@@ -279,16 +272,8 @@ public class PumpTileEntity extends PipeTileEntity
     public Optional<IFluidHandler> getSourceFluidInteractionHandler(Level world)
     {
         Direction direction = this.getBlockState().getValue(FluidPumpBlock.DIRECTION);
-        BlockEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
-        if(tileEntity != null)
-        {
-            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction);
-            if(lazyOptional.isPresent())
-            {
-                return lazyOptional.resolve();
-            }
-        }
-        return Optional.empty();
+        IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, this.worldPosition.relative(direction.getOpposite()), direction);
+        return Optional.ofNullable(handler);
     }
 
     public void cyclePowerMode()
@@ -297,7 +282,7 @@ public class PumpTileEntity extends PipeTileEntity
         if(this.level != null && !this.level.isClientSide())
         {
             CompoundTag compound = new CompoundTag();
-            this.saveAdditional(compound);
+            this.saveAdditional(compound, this.level.registryAccess());
             TileEntityUtil.sendUpdatePacket(this, compound);
             BlockState state = this.getBlockState();
             state = ((FluidPumpBlock) state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
@@ -306,9 +291,9 @@ public class PumpTileEntity extends PipeTileEntity
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
+        super.loadAdditional(compound, registries);
         if(compound.contains("PowerMode", Tag.TAG_INT))
         {
             this.powerMode = PowerMode.fromOrdinal(compound.getInt("PowerMode"));
@@ -316,9 +301,9 @@ public class PumpTileEntity extends PipeTileEntity
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
+        super.saveAdditional(compound, registries);
         compound.putInt("PowerMode", this.powerMode.ordinal());
     }
 

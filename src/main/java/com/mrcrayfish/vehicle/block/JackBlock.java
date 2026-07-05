@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -29,6 +30,9 @@ import javax.annotation.Nullable;
  */
 public class JackBlock extends RotatedObjectBlock
 {
+
+    @Override
+    public MapCodec<? extends JackBlock> codec() { return MapCodec.unit(this); }
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 10, 15);

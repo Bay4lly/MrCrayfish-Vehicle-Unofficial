@@ -1,5 +1,6 @@
 package com.mrcrayfish.vehicle.util;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -14,26 +15,23 @@ public class CommonUtils
 {
     public static CompoundTag getOrCreateStackTag(ItemStack stack)
     {
-        if(stack.getTag() == null)
-        {
-            stack.setTag(new CompoundTag());
-        }
-        return stack.getTag();
+        net.minecraft.world.item.component.CustomData data = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        return data.copyTag();
     }
 
-    public static void writeItemStackToTag(CompoundTag compound, String key, ItemStack stack)
+    public static void writeItemStackToTag(HolderLookup.Provider registries, CompoundTag compound, String key, ItemStack stack)
     {
         if(!stack.isEmpty())
         {
-            compound.put(key, stack.save(new CompoundTag()));
+            compound.put(key, stack.save(registries, new CompoundTag()));
         }
     }
 
-    public static ItemStack readItemStackFromTag(CompoundTag compound, String key)
+    public static ItemStack readItemStackFromTag(HolderLookup.Provider registries, CompoundTag compound, String key)
     {
         if(compound.contains(key, Tag.TAG_COMPOUND))
         {
-            return ItemStack.of(compound.getCompound(key));
+            return ItemStack.parse(registries, compound.getCompound(key)).orElse(ItemStack.EMPTY);
         }
         return ItemStack.EMPTY;
     }

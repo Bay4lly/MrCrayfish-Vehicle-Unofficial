@@ -100,7 +100,7 @@ public class CompactHelicopterRenderer extends AbstractHelicopterRenderer<Compac
             Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).multiply(-1, 1, 1).scale(0.0625);
             double scale = 32.0 / 30.0;
             double offsetX = -seatVec.x * scale;
-            double offsetY = (seatVec.y + player.getMyRidingOffset() + 0.3) * scale + 24 * 0.0625;
+            double offsetY = (seatVec.y - player.getVehicleAttachmentPoint(entity).y + 0.25 + 0.3) * scale + 24 * 0.0625;
             double offsetZ = seatVec.z * scale;
             float entityYaw = entity.yRotO + (entity.getYRot() - entity.yRotO) * partialTicks;
 

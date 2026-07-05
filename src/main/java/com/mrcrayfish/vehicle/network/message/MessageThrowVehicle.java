@@ -1,40 +1,53 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MessageThrowVehicle implements IMessage<MessageThrowVehicle>
 {
-    @Override
-    public void encode(MessageThrowVehicle message, FriendlyByteBuf buffer) {}
+    public static final CustomPacketPayload.Type<MessageThrowVehicle> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "throw_vehicle"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageThrowVehicle> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageThrowVehicle().decode(buf));
 
     @Override
-    public MessageThrowVehicle decode(FriendlyByteBuf buffer)
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
+    @Override
+    public void encode(MessageThrowVehicle message, RegistryFriendlyByteBuf buffer) {}
+
+    @Override
+    public MessageThrowVehicle decode(RegistryFriendlyByteBuf buffer)
     {
         return new MessageThrowVehicle();
     }
 
     @Override
-    public void handle(MessageThrowVehicle message, Supplier<Context> supplier)
+    public void handle(MessageThrowVehicle message, IPayloadContext context)
     {
-        supplier.get().enqueueWork(() ->
+        context.enqueueWork(() ->
         {
-            ServerPlayer player = supplier.get().getSender();
+            ServerPlayer player = ((ServerPlayer) context.player());
             if(player != null && player.isCrouching())
             {
                 //Spawns the vehicle and plays the placing sound
@@ -75,6 +88,5 @@ public class MessageThrowVehicle implements IMessage<MessageThrowVehicle>
                 }
             }
         });
-        supplier.get().setPacketHandled(true);
     }
 }

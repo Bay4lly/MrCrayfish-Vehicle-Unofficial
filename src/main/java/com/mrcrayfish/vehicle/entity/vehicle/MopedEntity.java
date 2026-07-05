@@ -38,9 +38,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -56,13 +55,16 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     private static final EntityDataAccessor<Boolean> CHEST_OPEN = SynchedEntityData.defineId(MopedEntity.class, EntityDataSerializers.BOOLEAN);
     private static final RayTracePart CHEST_BOX = new RayTracePart(createBoxScaled(-3.5, 10.5, -7, 3.5, 17.5, -14, 1.2));
     private static final RayTracePart TRAY_BOX = new RayTracePart(createBoxScaled(-4, 9.5, -6.5, 4, 10.5, -14.5, 1.2));
-    private static final Map<RayTracePart, TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () ->
+    private static final Map<RayTracePart, TriangleRayTraceList> interactionBoxMapStatic = buildInteractionBoxMap();
+
+    private static Map<RayTracePart, TriangleRayTraceList> buildInteractionBoxMap()
     {
+        if(!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
         Map<RayTracePart, TriangleRayTraceList> map = new HashMap<>();
         map.put(CHEST_BOX, EntityRayTracer.boxToTriangles(CHEST_BOX.getBox(), null));
         map.put(TRAY_BOX, EntityRayTracer.boxToTriangles(TRAY_BOX.getBox(), null));
         return map;
-    });
+    }
 
     private StorageInventory inventory;
 
@@ -82,11 +84,11 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     }
 
     @Override
-    public void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(CHEST, false);
-        this.entityData.define(CHEST_OPEN, false);
+        super.defineSynchedData(builder);
+        builder.define(CHEST, false);
+        builder.define(CHEST_OPEN, false);
     }
 
     @Override
@@ -123,7 +125,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
             if(compound.contains("Inventory", Tag.TAG_LIST))
             {
                 this.initInventory();
-                InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory);
+                InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory, this.level().registryAccess());
             }
         }
     }
@@ -135,7 +137,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
         compound.putBoolean("Chest", this.hasChest());
         if(this.hasChest() && inventory != null)
         {
-            InventoryUtil.writeInventoryToNBT(compound, "Inventory", inventory);
+            InventoryUtil.writeInventoryToNBT(compound, "Inventory", inventory, this.level().registryAccess());
         }
     }
 
@@ -158,13 +160,13 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
             RayTracePart partHit = result.getPartHit();
             if(partHit == CHEST_BOX && this.hasChest())
             {
-                PacketHandler.instance.sendToServer(new MessageOpenStorage(this.getId()));
+                PacketHandler.sendToServer(new MessageOpenStorage(this.getId()));
                 Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
             else if(partHit == TRAY_BOX && !this.hasChest())
             {
-                PacketHandler.instance.sendToServer(new MessageAttachChest(this.getId()));
+                PacketHandler.sendToServer(new MessageAttachChest(this.getId()));
                 Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
@@ -242,17 +244,30 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
             this.setChest(true);
             this.initInventory();
 
-            CompoundTag itemTag = stack.getTag();
-            if(itemTag != null)
+            net.minecraft.world.item.component.ItemContainerContents contents = stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
+            if(contents != null)
             {
-                CompoundTag blockEntityTag = itemTag.getCompound("BlockEntityTag");
-                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Tag.TAG_LIST))
+                NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
+                contents.copyInto(chestInventory);
+                for(int i = 0; i < chestInventory.size(); i++)
                 {
-                    NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
-                    ContainerHelper.loadAllItems(blockEntityTag, chestInventory);
-                    for(int i = 0; i < chestInventory.size(); i++)
+                    this.inventory.setItem(i, chestInventory.get(i));
+                }
+            }
+            else
+            {
+                net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+                if(customData != null)
+                {
+                    CompoundTag blockEntityTag = customData.copyTag();
+                    if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Tag.TAG_LIST))
                     {
-                        this.inventory.setItem(i, chestInventory.get(i));
+                        NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
+                        net.minecraft.world.ContainerHelper.loadAllItems(blockEntityTag, chestInventory, this.level().registryAccess());
+                        for(int i = 0; i < chestInventory.size(); i++)
+                        {
+                            this.inventory.setItem(i, chestInventory.get(i));
+                        }
                     }
                 }
             }

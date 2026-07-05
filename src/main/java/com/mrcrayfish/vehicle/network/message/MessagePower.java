@@ -1,15 +1,28 @@
 package com.mrcrayfish.vehicle.network.message;
 
+import com.mrcrayfish.vehicle.Reference;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent.Context;
 
-import java.util.function.Supplier;
 
 public class MessagePower implements IMessage<MessagePower>
 {
+    public static final CustomPacketPayload.Type<MessagePower> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "power"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessagePower> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessagePower().decode(buf));
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return TYPE;
+    }
+
 	private float power;
 
 	public MessagePower() {}
@@ -20,23 +33,23 @@ public class MessagePower implements IMessage<MessagePower>
 	}
 
 	@Override
-	public void encode(MessagePower message, FriendlyByteBuf buffer)
+	public void encode(MessagePower message, RegistryFriendlyByteBuf buffer)
 	{
 		buffer.writeFloat(message.power);
 	}
 
 	@Override
-	public MessagePower decode(FriendlyByteBuf buffer)
+	public MessagePower decode(RegistryFriendlyByteBuf buffer)
 	{
 		return new MessagePower(buffer.readFloat());
 	}
 
 	@Override
-	public void handle(MessagePower message, Supplier<Context> supplier)
+	public void handle(MessagePower message, IPayloadContext context)
 	{
-		supplier.get().enqueueWork(() ->
+		context.enqueueWork(() ->
 		{
-			ServerPlayer player = supplier.get().getSender();
+			ServerPlayer player = ((ServerPlayer) context.player());
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();
@@ -46,6 +59,5 @@ public class MessagePower implements IMessage<MessagePower>
 				}
 			}
 		});
-		supplier.get().setPacketHandled(true);
 	}
 }

@@ -36,17 +36,17 @@ public class WorkstationTileEntity extends TileEntitySynced implements IStorageB
     }
 
     @Override
-    public void load(CompoundTag compound)
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.load(compound);
-        ContainerHelper.loadAllItems(compound, this.inventory);
+        super.loadAdditional(compound, registries);
+        ContainerHelper.loadAllItems(compound, this.inventory, registries);
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound)
+    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
     {
-        super.saveAdditional(compound);
-        ContainerHelper.saveAllItems(compound, this.inventory);
+        super.saveAdditional(compound, registries);
+        ContainerHelper.saveAllItems(compound, this.inventory, registries);
     }
 
     @Override

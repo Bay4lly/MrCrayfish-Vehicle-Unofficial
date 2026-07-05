@@ -18,7 +18,7 @@ public class BumperCarEntity extends LandVehicleEntity
         super(type, worldIn);
         this.setMaxSpeed(10);
         this.setTurnSensitivity(20);
-        this.setMaxUpStep(0.625F);
+        this.stepHeight = 0.625F;
         //TODO figure out fuel system
     }
 

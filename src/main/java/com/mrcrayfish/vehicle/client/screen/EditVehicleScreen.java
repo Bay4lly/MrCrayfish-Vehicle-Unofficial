@@ -33,7 +33,7 @@ import java.util.Collections;
  */
 public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContainer>
 {
-    private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("vehicle:textures/gui/edit_vehicle.png");
+    private static final ResourceLocation GUI_TEXTURES = ResourceLocation.parse("vehicle:textures/gui/edit_vehicle.png");
 
     private final Inventory playerInventory;
     private final Container vehicleInventory;
@@ -102,10 +102,9 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
             int startX = (this.width - this.imageWidth) / 2;
             int startY = (this.height - this.imageHeight) / 2;
 
-            RenderSystem.getModelViewStack().pushPose();
-            RenderSystem.getModelViewStack().translate(startX + 96, startY + 78, 1050.0F);
-            RenderSystem.getModelViewStack().scale(-1.0F, -1.0F, -1.0F);
-            RenderSystem.applyModelViewMatrix();
+            matrixStack.pose().pushPose();
+            matrixStack.pose().translate(startX + 96, startY + 78, 1050.0F);
+            matrixStack.pose().scale(-1.0F, -1.0F, -1.0F);
 
             matrixStack.enableScissor(startX + 26, startY + 17, startX + 168, startY + 87);
 
@@ -137,7 +136,7 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
             renderManager.setRenderShadow(false);
             renderManager.overrideCameraOrientation(quaternion);
             MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            RenderSystem.runAsFancy(() -> renderer.setupTransformsAndRender(this.menu.getVehicle(), poseStack, renderTypeBuffer, Minecraft.getInstance().getFrameTime(), 15728880));
+            RenderSystem.runAsFancy(() -> renderer.setupTransformsAndRender(this.menu.getVehicle(), poseStack, renderTypeBuffer, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 15728880));
             renderTypeBuffer.endBatch();
             renderManager.setRenderShadow(true);
 
@@ -145,35 +144,33 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
 
             matrixStack.disableScissor();
 
-            RenderSystem.getModelViewStack().popPose();
-            RenderSystem.applyModelViewMatrix();
+            matrixStack.pose().popPose();
 
             Lighting.setupFor3DItems();
         }
 
         if(this.showHelp)
         {
-            RenderSystem.getModelViewStack().pushPose();
-            RenderSystem.getModelViewStack().scale(0.5F, 0.5F, 0.5F);
+            matrixStack.pose().pushPose();
+            matrixStack.pose().scale(0.5F, 0.5F, 0.5F);
             matrixStack.drawString(this.font, I18n.get("container.edit_vehicle.window_help"), 56, 38, 0xFFFFFF);
-            RenderSystem.getModelViewStack().popPose();
-            RenderSystem.applyModelViewMatrix();
+            matrixStack.pose().popPose();
         }
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scroll)
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
     {
         int startX = (this.width - this.imageWidth) / 2;
         int startY = (this.height - this.imageHeight) / 2;
         if(CommonUtils.isMouseWithin((int) mouseX, (int) mouseY, startX + 26, startY + 17, 142, 70))
         {
-            if(scroll < 0 && this.windowZoom > 0)
+            if(scrollY < 0 && this.windowZoom > 0)
             {
                 this.showHelp = false;
                 this.windowZoom--;
             }
-            else if(scroll > 0)
+            else if(scrollY > 0)
             {
                 this.showHelp = false;
                 this.windowZoom++;
@@ -227,7 +224,7 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
     @Override
     public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(matrixStack);
+        this.renderBackground(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderTooltip(matrixStack, mouseX, mouseY);
 

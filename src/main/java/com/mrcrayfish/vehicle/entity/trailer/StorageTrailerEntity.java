@@ -23,9 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -39,12 +38,16 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
 {
     private static final EntityRayTracer.RayTracePart CONNECTION_BOX = new EntityRayTracer.RayTracePart(createScaledBoundingBox(-6 * 0.0625, 4.2 * 0.0625, 9 * 0.0625, 6 * 0.0625, 8.3 * 0.0625F, 17 * 0.0625, 1.1));
     private static final EntityRayTracer.RayTracePart CHEST_BOX = new EntityRayTracer.RayTracePart(new AABB(-0.4375, 0.475, -0.4375, 0.4375, 1.34, 0.4375));
-    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> {
+    private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = buildInteractionBoxMap();
+
+    private static Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> buildInteractionBoxMap()
+    {
+        if(!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
         Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> map = new HashMap<>();
         map.put(CONNECTION_BOX, EntityRayTracer.boxToTriangles(CONNECTION_BOX.getBox(), null));
         map.put(CHEST_BOX, EntityRayTracer.boxToTriangles(CHEST_BOX.getBox(), null));
         return map;
-    });
+    }
 
     private StorageInventory inventory;
 
@@ -95,12 +98,12 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         {
             if(result.getPartHit() == CONNECTION_BOX)
             {
-                PacketHandler.instance.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
+                PacketHandler.sendToServer(new MessageAttachTrailer(this.getId(), Minecraft.getInstance().player.getId()));
                 return true;
             }
             else if(result.getPartHit() == CHEST_BOX)
             {
-                PacketHandler.instance.sendToServer(new MessageOpenStorage(this.getId()));
+                PacketHandler.sendToServer(new MessageOpenStorage(this.getId()));
                 Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
@@ -115,7 +118,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         if(compound.contains("Inventory", Tag.TAG_LIST))
         {
             this.initInventory();
-            InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory);
+            InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory, this.level().registryAccess());
         }
     }
 
@@ -125,7 +128,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
         {
-            InventoryUtil.writeInventoryToNBT(compound, "Inventory", inventory);
+            InventoryUtil.writeInventoryToNBT(compound, "Inventory", inventory, this.level().registryAccess());
         }
     }
 

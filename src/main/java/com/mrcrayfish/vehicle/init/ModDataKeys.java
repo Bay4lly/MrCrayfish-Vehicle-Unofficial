@@ -17,19 +17,23 @@ import java.util.Optional;
 public class ModDataKeys
 {
     public static final SyncedDataKey<Player, Integer> TRAILER = SyncedDataKey.builder(SyncedClassKey.PLAYER, Serializers.INTEGER)
-            .id(new ResourceLocation(Reference.MOD_ID, "trailer"))
+            .id(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "trailer"))
             .defaultValueSupplier(() -> -1)
             .resetOnDeath()
             .build();
 
     public static final SyncedDataKey<Player, Optional<BlockPos>> GAS_PUMP = SyncedDataKey.builder(SyncedClassKey.PLAYER, com.mrcrayfish.vehicle.common.data.Serializers.OPTIONAL_BLOCK_POS)
-            .id(new ResourceLocation(Reference.MOD_ID, "gas_pump"))
+            .id(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "gas_pump"))
             .defaultValueSupplier(Optional::empty)
             .resetOnDeath()
             .build();
 
+    private static boolean registered = false;
+
     public static void register()
     {
+        if(registered) return;
+        registered = true;
         FrameworkAPI.registerSyncedDataKey(TRAILER);
         FrameworkAPI.registerSyncedDataKey(GAS_PUMP);
     }

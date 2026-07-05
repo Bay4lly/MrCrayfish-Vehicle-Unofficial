@@ -17,9 +17,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 /**
  * Author: MrCrayfish
@@ -46,7 +46,7 @@ public class FuelDrumRenderer implements BlockEntityRenderer<FuelDrumTileEntity>
                 BlockHitResult result = (BlockHitResult) this.renderer.cameraHitResult;
                 if(result.getBlockPos().equals(fuelDrumTileEntity.getBlockPos()))
                 {
-                    this.drawFluidLabel(this.renderer.font, fuelDrumTileEntity.getFluidTank(), matrixStack, renderTypeBuffer);
+                    this.drawFluidLabel(net.minecraft.client.Minecraft.getInstance().font, fuelDrumTileEntity.getFluidTank(), matrixStack, renderTypeBuffer);
                 }
             }
         }

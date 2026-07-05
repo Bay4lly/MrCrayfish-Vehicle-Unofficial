@@ -3,8 +3,8 @@ package com.mrcrayfish.vehicle.client.handler;
 import com.mrcrayfish.controllable.Controllable;
 import com.mrcrayfish.vehicle.client.ClientHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -39,7 +39,7 @@ public class ControllerHandler
                         VehicleEntity vehicle = (VehicleEntity) player.getVehicle();
                         if(vehicle.canTowTrailer())
                         {
-                            PacketHandler.instance.sendToServer(new MessageHitchTrailer(vehicle.getId(), vehicle.getTrailer() == null));
+                            PacketHandler.sendToServer(new MessageHitchTrailer(vehicle.getId(), vehicle.getTrailer() == null));
                         }
                         event.setCanceled(true);
                     }
