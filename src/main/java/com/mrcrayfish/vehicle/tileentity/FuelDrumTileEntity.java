@@ -1,38 +1,41 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.core.BlockPos
+ *  net.minecraft.world.level.block.entity.BlockEntityType
+ *  net.minecraft.world.level.block.state.BlockState
+ */
 package com.mrcrayfish.vehicle.tileentity;
 
+import com.mrcrayfish.vehicle.block.FuelDrumBlock;
 import com.mrcrayfish.vehicle.init.ModBlocks;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.tileentity.TileFluidHandlerSynced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Author: MrCrayfish
- */
-public class FuelDrumTileEntity extends TileFluidHandlerSynced
-{
-    public FuelDrumTileEntity(BlockPos pos, BlockState state)
-    {
-        super(ModTileEntities.FUEL_DRUM.get(), pos, state, ModBlocks.FUEL_DRUM.get().getCapacity());
+public class FuelDrumTileEntity
+extends TileFluidHandlerSynced {
+    public FuelDrumTileEntity(BlockPos pos, BlockState state) {
+        super((BlockEntityType)ModTileEntities.FUEL_DRUM.get(), pos, state, ((FuelDrumBlock)((Object)ModBlocks.FUEL_DRUM.get())).getCapacity());
     }
 
-    public FuelDrumTileEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state, int capacity)
-    {
+    public FuelDrumTileEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state, int capacity) {
         super(tileEntityType, pos, state, capacity);
     }
 
-    public boolean hasFluid()
-    {
+    public boolean hasFluid() {
         return !this.tank.getFluid().isEmpty();
     }
 
-    public int getAmount()
-    {
+    public int getAmount() {
         return this.tank.getFluidAmount();
     }
 
-    public int getCapacity()
-    {
+    public int getCapacity() {
         return this.tank.getCapacity();
     }
 }
+

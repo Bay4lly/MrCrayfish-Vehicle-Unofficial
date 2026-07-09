@@ -1,15 +1,20 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.world.item.ItemStack
+ */
 package com.mrcrayfish.vehicle.common.inventory;
 
+import com.mrcrayfish.vehicle.common.inventory.IStorage;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * Author: MrCrayfish
- */
-public interface IAttachableChest extends IStorage
-{
-    boolean hasChest();
+public interface IAttachableChest
+extends IStorage {
+    public boolean hasChest();
 
-    void attachChest(ItemStack stack);
+    public void attachChest(ItemStack var1);
 
-    void removeChest();
+    public void removeChest();
 }
+

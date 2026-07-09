@@ -1,72 +1,64 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.world.phys.Vec3
+ */
 package com.mrcrayfish.vehicle.common;
 
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Author: MrCrayfish
- */
-public class Seat
-{
+public class Seat {
     private Vec3 position;
     private boolean driver;
     private float yawOffset;
 
-    protected Seat(Vec3 position)
-    {
+    protected Seat(Vec3 position) {
         this(position, false);
     }
 
-    protected Seat(Vec3 position, float yawOffset)
-    {
+    protected Seat(Vec3 position, float yawOffset) {
         this(position, false);
         this.yawOffset = yawOffset;
     }
 
-    protected Seat(Vec3 position, boolean driver)
-    {
+    protected Seat(Vec3 position, boolean driver) {
         this.position = position;
         this.driver = driver;
     }
 
-    public Seat(Vec3 position, boolean driver, float yawOffset)
-    {
+    public Seat(Vec3 position, boolean driver, float yawOffset) {
         this.position = position;
         this.driver = driver;
         this.yawOffset = yawOffset;
     }
 
-    public Vec3 getPosition()
-    {
-        return position;
+    public Vec3 getPosition() {
+        return this.position;
     }
 
-    public boolean isDriverSeat()
-    {
-        return driver;
+    public boolean isDriverSeat() {
+        return this.driver;
     }
 
-    public float getYawOffset()
-    {
-        return yawOffset;
+    public float getYawOffset() {
+        return this.yawOffset;
     }
 
-    public static Seat of(double x, double y, double z)
-    {
+    public static Seat of(double x, double y, double z) {
         return new Seat(new Vec3(x, y, z));
     }
 
-    public static Seat of(double x, double y, double z, boolean driver)
-    {
+    public static Seat of(double x, double y, double z, boolean driver) {
         return new Seat(new Vec3(x, y, z), driver);
     }
 
-    public static Seat of(double x, double y, double z, float yawOffset)
-    {
+    public static Seat of(double x, double y, double z, float yawOffset) {
         return new Seat(new Vec3(x, y, z), yawOffset);
     }
 
-    public static Seat of(double x, double y, double z, boolean driver, float yawOffset)
-    {
+    public static Seat of(double x, double y, double z, boolean driver, float yawOffset) {
         return new Seat(new Vec3(x, y, z), driver, yawOffset);
     }
 }
+

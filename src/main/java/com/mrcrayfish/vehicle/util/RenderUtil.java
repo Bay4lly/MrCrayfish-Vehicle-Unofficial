@@ -1,8 +1,55 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.blaze3d.systems.RenderSystem
+ *  com.mojang.blaze3d.vertex.BufferBuilder
+ *  com.mojang.blaze3d.vertex.BufferUploader
+ *  com.mojang.blaze3d.vertex.DefaultVertexFormat
+ *  com.mojang.blaze3d.vertex.MeshData
+ *  com.mojang.blaze3d.vertex.PoseStack
+ *  com.mojang.blaze3d.vertex.PoseStack$Pose
+ *  com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator
+ *  com.mojang.blaze3d.vertex.Tesselator
+ *  com.mojang.blaze3d.vertex.VertexConsumer
+ *  com.mojang.blaze3d.vertex.VertexFormat$Mode
+ *  net.minecraft.ChatFormatting
+ *  net.minecraft.client.Minecraft
+ *  net.minecraft.client.renderer.ItemBlockRenderTypes
+ *  net.minecraft.client.renderer.MultiBufferSource
+ *  net.minecraft.client.renderer.RenderType
+ *  net.minecraft.client.renderer.Sheets
+ *  net.minecraft.client.renderer.block.model.BakedQuad
+ *  net.minecraft.client.renderer.entity.ItemRenderer
+ *  net.minecraft.client.resources.model.BakedModel
+ *  net.minecraft.client.resources.model.ModelBakery
+ *  net.minecraft.client.resources.model.ModelResourceLocation
+ *  net.minecraft.core.Direction
+ *  net.minecraft.network.chat.Component
+ *  net.minecraft.network.chat.FormattedText
+ *  net.minecraft.network.chat.Style
+ *  net.minecraft.resources.ResourceLocation
+ *  net.minecraft.util.RandomSource
+ *  net.minecraft.world.item.ItemDisplayContext
+ *  net.minecraft.world.item.ItemStack
+ *  net.minecraft.world.item.Items
+ *  net.neoforged.neoforge.client.ClientHooks
+ */
 package com.mrcrayfish.vehicle.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -23,161 +70,121 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.client.ClientHooks;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-/**
- * Author: MrCrayfish
- */
-public class RenderUtil
-{
-    /**
-     * Draws a textured modal rectangle with more precision than GuiScreen's methods. This will only
-     * work correctly if the bound texture is 256x256.
-     */
-    public static void drawTexturedModalRect(double x, double y, int textureX, int textureY, double width, double height)
-    {
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.addVertex((float)x, (float)(y + height), 0).setUv(textureX * 0.00390625F, (float)(textureY + height) * 0.00390625F);
-        bufferbuilder.addVertex((float)(x + width), (float)(y + height), 0).setUv((float)(textureX + width) * 0.00390625F, (float)(textureY + height) * 0.00390625F);
-        bufferbuilder.addVertex((float)(x + width), (float)y, 0).setUv((float)(textureX + width) * 0.00390625F, textureY * 0.00390625F);
-        bufferbuilder.addVertex((float)x, (float)y, 0).setUv(textureX * 0.00390625F, textureY * 0.00390625F);
-        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+public class RenderUtil {
+    public static void drawTexturedModalRect(double x, double y, int textureX, int textureY, double width, double height) {
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.addVertex((float)x, (float)(y + height), 0.0f).setUv((float)textureX * 0.00390625f, (float)((double)textureY + height) * 0.00390625f);
+        bufferbuilder.addVertex((float)(x + width), (float)(y + height), 0.0f).setUv((float)((double)textureX + width) * 0.00390625f, (float)((double)textureY + height) * 0.00390625f);
+        bufferbuilder.addVertex((float)(x + width), (float)y, 0.0f).setUv((float)((double)textureX + width) * 0.00390625f, (float)textureY * 0.00390625f);
+        bufferbuilder.addVertex((float)x, (float)y, 0.0f).setUv((float)textureX * 0.00390625f, (float)textureY * 0.00390625f);
+        BufferUploader.drawWithShader((MeshData)bufferbuilder.buildOrThrow());
     }
 
-    /**
-     * Draws a rectangle with a horizontal gradient between the specified colors (ARGB format).
-     */
-    public static void drawGradientRectHorizontal(int left, int top, int right, int bottom, int leftColor, int rightColor)
-    {
-        float redStart = (float)(leftColor >> 24 & 255) / 255.0F;
-        float greenStart = (float)(leftColor >> 16 & 255) / 255.0F;
-        float blueStart = (float)(leftColor >> 8 & 255) / 255.0F;
-        float alphaStart = (float)(leftColor & 255) / 255.0F;
-        float redEnd = (float)(rightColor >> 24 & 255) / 255.0F;
-        float greenEnd = (float)(rightColor >> 16 & 255) / 255.0F;
-        float blueEnd = (float)(rightColor >> 8 & 255) / 255.0F;
-        float alphaEnd = (float)(rightColor & 255) / 255.0F;
+    public static void drawGradientRectHorizontal(int left, int top, int right, int bottom, int leftColor, int rightColor) {
+        float redStart = (float)(leftColor >> 24 & 0xFF) / 255.0f;
+        float greenStart = (float)(leftColor >> 16 & 0xFF) / 255.0f;
+        float blueStart = (float)(leftColor >> 8 & 0xFF) / 255.0f;
+        float alphaStart = (float)(leftColor & 0xFF) / 255.0f;
+        float redEnd = (float)(rightColor >> 24 & 0xFF) / 255.0f;
+        float greenEnd = (float)(rightColor >> 16 & 0xFF) / 255.0f;
+        float blueEnd = (float)(rightColor >> 8 & 0xFF) / 255.0f;
+        float alphaEnd = (float)(rightColor & 0xFF) / 255.0f;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.addVertex((float)right, (float)top, 0).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
-        bufferbuilder.addVertex((float)left, (float)top, 0).setColor(greenStart, blueStart, alphaStart, redStart);
-        bufferbuilder.addVertex((float)left, (float)bottom, 0).setColor(greenStart, blueStart, alphaStart, redStart);
-        bufferbuilder.addVertex((float)right, (float)bottom, 0).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
-        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.addVertex((float)right, (float)top, 0.0f).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
+        bufferbuilder.addVertex((float)left, (float)top, 0.0f).setColor(greenStart, blueStart, alphaStart, redStart);
+        bufferbuilder.addVertex((float)left, (float)bottom, 0.0f).setColor(greenStart, blueStart, alphaStart, redStart);
+        bufferbuilder.addVertex((float)right, (float)bottom, 0.0f).setColor(greenEnd, blueEnd, alphaEnd, redEnd);
+        BufferUploader.drawWithShader((MeshData)bufferbuilder.buildOrThrow());
         RenderSystem.disableBlend();
     }
 
-    public static BakedModel getModel(ItemStack stack)
-    {
+    public static BakedModel getModel(ItemStack stack) {
         return Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(stack);
     }
 
-    public static void renderColoredModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int color, int lightTexture, int overlayTexture)
-    {
+    public static void renderColoredModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int color, int lightTexture, int overlayTexture) {
         matrixStack.pushPose();
-        net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+        ClientHooks.handleCameraTransforms((PoseStack)matrixStack, (BakedModel)model, (ItemDisplayContext)transformType, (boolean)leftInteractionHanded);
         matrixStack.translate(-0.5, -0.5, -0.5);
-        if(!model.isCustomRenderer())
-        {
+        if (!model.isCustomRenderer()) {
             VertexConsumer vertexBuilder = renderTypeBuffer.getBuffer(Sheets.cutoutBlockSheet());
-            renderModel(model, ItemStack.EMPTY, color, lightTexture, overlayTexture, matrixStack, vertexBuilder);
+            RenderUtil.renderModel(model, ItemStack.EMPTY, color, lightTexture, overlayTexture, matrixStack, vertexBuilder);
         }
         matrixStack.popPose();
     }
 
-    public static void renderDamagedVehicleModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, int stage, int color, int lightTexture, int overlayTexture)
-    {
+    public static void renderDamagedVehicleModel(BakedModel model, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, int stage, int color, int lightTexture, int overlayTexture) {
         matrixStack.pushPose();
-        net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+        ClientHooks.handleCameraTransforms((PoseStack)matrixStack, (BakedModel)model, (ItemDisplayContext)transformType, (boolean)leftInteractionHanded);
         matrixStack.translate(-0.5, -0.5, -0.5);
-        if(!model.isCustomRenderer())
-        {
+        if (!model.isCustomRenderer()) {
             Minecraft mc = Minecraft.getInstance();
             PoseStack.Pose entry = matrixStack.last();
-            VertexConsumer vertexBuilder = new SheetedDecalTextureGenerator(mc.renderBuffers().crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(stage)), matrixStack.last(), 1.0F);
-            renderModel(model, ItemStack.EMPTY, color, lightTexture, overlayTexture, matrixStack, vertexBuilder);
+            SheetedDecalTextureGenerator vertexBuilder = new SheetedDecalTextureGenerator(mc.renderBuffers().crumblingBufferSource().getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(stage)), matrixStack.last(), 1.0f);
+            RenderUtil.renderModel(model, ItemStack.EMPTY, color, lightTexture, overlayTexture, matrixStack, (VertexConsumer)vertexBuilder);
         }
         matrixStack.popPose();
     }
 
-    public static void renderModel(ItemStack stack, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int lightTexture, int overlayTexture, BakedModel model)
-    {
-        if(!stack.isEmpty())
-        {
+    public static void renderModel(ItemStack stack, ItemDisplayContext transformType, boolean leftInteractionHanded, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int lightTexture, int overlayTexture, BakedModel model) {
+        if (!stack.isEmpty()) {
+            boolean tridentFlag;
             matrixStack.pushPose();
             boolean isGui = transformType == ItemDisplayContext.GUI;
-            boolean tridentFlag = isGui || transformType == ItemDisplayContext.GROUND || transformType == ItemDisplayContext.FIXED;
-            if(stack.getItem() == Items.TRIDENT && tridentFlag)
-            {
-                model = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(ResourceLocation.parse("minecraft:trident"), "inventory"));
+            boolean bl = tridentFlag = isGui || transformType == ItemDisplayContext.GROUND || transformType == ItemDisplayContext.FIXED;
+            if (stack.getItem() == Items.TRIDENT && tridentFlag) {
+                model = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(ResourceLocation.parse((String)"minecraft:trident"), "inventory"));
             }
-
-            model = net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(matrixStack, model, transformType, leftInteractionHanded);
+            model = ClientHooks.handleCameraTransforms((PoseStack)matrixStack, (BakedModel)model, (ItemDisplayContext)transformType, (boolean)leftInteractionHanded);
             matrixStack.translate(-0.5, -0.5, -0.5);
-            if(!model.isCustomRenderer() && (stack.getItem() != Items.TRIDENT || tridentFlag))
-            {
-                RenderType renderType = ItemBlockRenderTypes.getRenderType(stack, false); //TODO test what this flag does
-                if(isGui && Objects.equals(renderType, Sheets.translucentCullBlockSheet()))
-                {
+            if (!model.isCustomRenderer() && (stack.getItem() != Items.TRIDENT || tridentFlag)) {
+                RenderType renderType = ItemBlockRenderTypes.getRenderType((ItemStack)stack, (boolean)false);
+                if (isGui && Objects.equals(renderType, Sheets.translucentCullBlockSheet())) {
                     renderType = Sheets.translucentCullBlockSheet();
                 }
-                VertexConsumer vertexBuilder = ItemRenderer.getFoilBuffer(renderTypeBuffer, renderType, true, stack.hasFoil());
-                renderModel(model, stack, -1, lightTexture, overlayTexture, matrixStack, vertexBuilder);
-            }
-            else
-            {
-                // FIXME
+                VertexConsumer vertexBuilder = ItemRenderer.getFoilBuffer((MultiBufferSource)renderTypeBuffer, (RenderType)renderType, (boolean)true, (boolean)stack.hasFoil());
+                RenderUtil.renderModel(model, stack, -1, lightTexture, overlayTexture, matrixStack, vertexBuilder);
+            } else {
                 Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer().renderByItem(stack, transformType, matrixStack, renderTypeBuffer, lightTexture, overlayTexture);
             }
-
             matrixStack.popPose();
         }
     }
 
-    private static void renderModel(BakedModel model, ItemStack stack, int color, int lightTexture, int overlayTexture, PoseStack matrixStack, VertexConsumer vertexBuilder)
-    {
+    private static void renderModel(BakedModel model, ItemStack stack, int color, int lightTexture, int overlayTexture, PoseStack matrixStack, VertexConsumer vertexBuilder) {
         RandomSource random = RandomSource.create();
-        for(Direction direction : Direction.values())
-        {
+        for (Direction direction : Direction.values()) {
             random.setSeed(42L);
-            renderQuads(matrixStack, vertexBuilder, model.getQuads(null, direction, random), stack, color, lightTexture, overlayTexture);
+            RenderUtil.renderQuads(matrixStack, vertexBuilder, model.getQuads(null, direction, random), stack, color, lightTexture, overlayTexture);
         }
         random.setSeed(42L);
-        renderQuads(matrixStack, vertexBuilder, model.getQuads(null, null, random), stack, color, lightTexture, overlayTexture);
+        RenderUtil.renderQuads(matrixStack, vertexBuilder, model.getQuads(null, null, random), stack, color, lightTexture, overlayTexture);
     }
 
-    private static void renderQuads(PoseStack matrixStack, VertexConsumer vertexBuilder, List<BakedQuad> quads, ItemStack stack, int color, int lightTexture, int overlayTexture)
-    {
+    private static void renderQuads(PoseStack matrixStack, VertexConsumer vertexBuilder, List<BakedQuad> quads, ItemStack stack, int color, int lightTexture, int overlayTexture) {
         boolean useItemColor = !stack.isEmpty() && color == -1;
         PoseStack.Pose entry = matrixStack.last();
-        for(BakedQuad quad : quads)
-        {
+        for (BakedQuad quad : quads) {
             int tintColor = 0xFFFFFF;
-            if(quad.isTinted())
-            {
-                if(useItemColor)
-                {
-                    tintColor = Minecraft.getInstance().getItemColors().getColor(stack, quad.getTintIndex());
-                }
-                else
-                {
-                    tintColor = color;
-                }
+            if (quad.isTinted()) {
+                tintColor = useItemColor ? Minecraft.getInstance().getItemColors().getColor(stack, quad.getTintIndex()) : color;
             }
-            float red = (float) (tintColor >> 16 & 255) / 255.0F;
-            float green = (float) (tintColor >> 8 & 255) / 255.0F;
-            float blue = (float) (tintColor & 255) / 255.0F;
-            vertexBuilder.putBulkData(entry, quad, 1.0f, red, green, blue, lightTexture, overlayTexture);
+            float red = (float)(tintColor >> 16 & 0xFF) / 255.0f;
+            float green = (float)(tintColor >> 8 & 0xFF) / 255.0f;
+            float blue = (float)(tintColor & 0xFF) / 255.0f;
+            float[] brightnesses = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
+            int[] lights = new int[]{lightTexture, lightTexture, lightTexture, lightTexture};
+            vertexBuilder.putBulkData(entry, quad, brightnesses, red, green, blue, 1.0f, lights, overlayTexture, false);
         }
     }
 
-    public static List<Component> lines(FormattedText text, int maxWidth)
-    {
+    public static List<Component> lines(FormattedText text, int maxWidth) {
         List<FormattedText> lines = Minecraft.getInstance().font.getSplitter().splitLines(text, maxWidth, Style.EMPTY);
         return lines.stream().map(t -> Component.literal(t.getString()).withStyle(ChatFormatting.GRAY)).collect(Collectors.toList());
     }
 }
+

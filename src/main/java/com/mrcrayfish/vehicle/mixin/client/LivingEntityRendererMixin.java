@@ -1,3 +1,20 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.blaze3d.vertex.PoseStack
+ *  net.minecraft.client.model.EntityModel
+ *  net.minecraft.client.renderer.MultiBufferSource
+ *  net.minecraft.client.renderer.entity.LivingEntityRenderer
+ *  net.minecraft.world.entity.LivingEntity
+ *  net.minecraft.world.entity.player.Player
+ *  org.spongepowered.asm.mixin.Mixin
+ *  org.spongepowered.asm.mixin.Shadow
+ *  org.spongepowered.asm.mixin.injection.At
+ *  org.spongepowered.asm.mixin.injection.At$Shift
+ *  org.spongepowered.asm.mixin.injection.Inject
+ *  org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+ */
 package com.mrcrayfish.vehicle.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,33 +28,31 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// FIXME cleanup
-// Based on: https://github.com/MrCrayfish/Obfuscate/blob/1.17.X/src/main/java/com/mrcrayfish/obfuscate/mixin/client/LivingRendererMixin.java#L41
-@Mixin(LivingEntityRenderer.class)
-class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>>
-{
+@Mixin(value={LivingEntityRenderer.class})
+class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
     @Shadow
     protected M model;
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
-    void fireRenderPlayerPre(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
-    {
-        if(!(entity instanceof Player))
-            return;
-
-        PlayerModelHandler.onPreRender((Player) entity, poseStack, partialTick);
+    LivingEntityRendererMixin() {
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(shift = Shift.AFTER, value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
-    void fireRenderPlayerPost(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
-    {
-        if(!(entity instanceof Player))
+    @Inject(method={"render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V")})
+    void fireRenderPlayerPre(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback) {
+        if (!(entity instanceof Player)) {
             return;
+        }
+        PlayerModelHandler.onPreRender((Player)entity, poseStack, partialTick);
+    }
 
+    @Inject(method={"render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"}, at={@At(shift=At.Shift.AFTER, value="INVOKE", target="Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V")})
+    void fireRenderPlayerPost(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback) {
+        if (!(entity instanceof Player)) {
+            return;
+        }
         FuelingHandler.onModelRenderPost(entity, this.model, poseStack);
     }
 }
+

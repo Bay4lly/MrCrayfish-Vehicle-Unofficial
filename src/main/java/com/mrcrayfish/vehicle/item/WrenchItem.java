@@ -1,34 +1,41 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.ChatFormatting
+ *  net.minecraft.client.gui.screens.Screen
+ *  net.minecraft.network.chat.Component
+ *  net.minecraft.network.chat.FormattedText
+ *  net.minecraft.world.item.Item
+ *  net.minecraft.world.item.Item$Properties
+ *  net.minecraft.world.item.Item$TooltipContext
+ *  net.minecraft.world.item.ItemStack
+ *  net.minecraft.world.item.TooltipFlag
+ */
 package com.mrcrayfish.vehicle.item;
 
 import com.mrcrayfish.vehicle.util.RenderUtil;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
-public class WrenchItem extends Item
-{
-    public WrenchItem(Item.Properties properties)
-    {
+public class WrenchItem
+extends Item {
+    public WrenchItem(Item.Properties properties) {
         super(properties);
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag)
-    {
-        if(Screen.hasShiftDown())
-        {
-            list.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info"), 150));
-        }
-        else
-        {
-            list.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag) {
+        if (Screen.hasShiftDown()) {
+            list.addAll(RenderUtil.lines((FormattedText)Component.translatable((String)(this.getDescriptionId() + ".info")), 150));
+        } else {
+            list.add((Component)Component.translatable((String)"vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 }
+

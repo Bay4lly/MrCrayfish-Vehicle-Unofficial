@@ -1,135 +1,122 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.blaze3d.vertex.PoseStack
+ *  com.mojang.math.Axis
+ *  javax.annotation.Nullable
+ *  net.minecraft.client.model.PlayerModel
+ *  net.minecraft.client.renderer.MultiBufferSource
+ *  net.minecraft.client.renderer.texture.OverlayTexture
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.entity.player.Player
+ *  net.minecraft.world.item.ItemDisplayContext
+ */
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
+import com.mrcrayfish.vehicle.client.model.ISpecialModel;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
+import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.OffRoaderEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
-import javax.annotation.Nullable;
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEntity>
-{
-    public OffRoaderRenderer(Supplier<VehicleProperties> defaultProperties)
-    {
+public class OffRoaderRenderer
+extends AbstractLandVehicleRenderer<OffRoaderEntity> {
+    public OffRoaderRenderer(Supplier<VehicleProperties> defaultProperties) {
         super(defaultProperties);
     }
 
     @Override
-    protected void render(@Nullable OffRoaderEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
-    {
+    protected void render(@Nullable OffRoaderEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light) {
         this.renderDamagedPart(vehicle, SpecialModels.OFF_ROADER_BODY.getModel(), matrixStack, renderTypeBuffer, light);
-
-        //Render the handles bars
         matrixStack.pushPose();
-            // Positions the steering wheel in the correct position
         matrixStack.translate(-0.3125, 0.35, 0.2);
-        matrixStack.mulPose(Axis.XP.rotationDegrees(-45F));
-        matrixStack.translate(0, -0.02, 0);
-        matrixStack.scale(0.75F, 0.75F, 0.75F);
-
-        if(vehicle != null)
-        {
-            // Rotates the steering wheel based on the wheel angle
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-45.0f));
+        matrixStack.translate(0.0, -0.02, 0.0);
+        matrixStack.scale(0.75f, 0.75f, 0.75f);
+        if (vehicle != null) {
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
-            float wheelAngleNormal = wheelAngle / 45F;
-            float turnRotation = wheelAngleNormal * 25F;
+            float wheelAngleNormal = wheelAngle / 45.0f;
+            float turnRotation = wheelAngleNormal * 25.0f;
             matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
-
         RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
-
         matrixStack.popPose();
     }
 
     @Override
-    public void applyPlayerModel(OffRoaderEntity entity, Player player, PlayerModel model, float partialTicks)
-    {
+    public void applyPlayerModel(OffRoaderEntity entity, Player player, PlayerModel model, float partialTicks) {
         int index = entity.getSeatTracker().getSeatIndex(player.getUUID());
-        if(index < 2) //Sitting in the front
-        {
-            model.rightLeg.xRot = (float) Math.toRadians(-80F);
-            model.rightLeg.yRot = (float) Math.toRadians(15F);
-            model.leftLeg.xRot = (float) Math.toRadians(-80F);
-            model.leftLeg.yRot = (float) Math.toRadians(-15F);
-
-            if(index == 1)
-            {
-                model.leftArm.xRot = (float) Math.toRadians(-75F);
-                model.leftArm.yRot = (float) Math.toRadians(-25F);
-                model.leftArm.zRot = 0F;
+        if (index < 2) {
+            model.rightLeg.xRot = (float)Math.toRadians(-80.0);
+            model.rightLeg.yRot = (float)Math.toRadians(15.0);
+            model.leftLeg.xRot = (float)Math.toRadians(-80.0);
+            model.leftLeg.yRot = (float)Math.toRadians(-15.0);
+            if (index == 1) {
+                model.leftArm.xRot = (float)Math.toRadians(-75.0);
+                model.leftArm.yRot = (float)Math.toRadians(-25.0);
+                model.leftArm.zRot = 0.0f;
             }
+        } else if (index == 3) {
+            model.rightLeg.xRot = (float)Math.toRadians(-90.0);
+            model.rightLeg.yRot = (float)Math.toRadians(15.0);
+            model.leftLeg.xRot = (float)Math.toRadians(-90.0);
+            model.leftLeg.yRot = (float)Math.toRadians(-15.0);
+            model.rightArm.xRot = (float)Math.toRadians(-75.0);
+            model.rightArm.yRot = (float)Math.toRadians(110.0);
+            model.rightArm.zRot = (float)Math.toRadians(0.0);
+            model.leftArm.xRot = (float)Math.toRadians(-105.0);
+            model.leftArm.yRot = (float)Math.toRadians(-20.0);
+            model.leftArm.zRot = 0.0f;
+        } else {
+            model.rightLeg.xRot = (float)Math.toRadians(0.0);
+            model.rightLeg.yRot = (float)Math.toRadians(0.0);
+            model.leftLeg.xRot = (float)Math.toRadians(0.0);
+            model.leftLeg.yRot = (float)Math.toRadians(0.0);
+            model.rightArm.xRot = (float)Math.toRadians(-10.0);
+            model.rightArm.zRot = (float)Math.toRadians(25.0);
+            model.leftArm.xRot = (float)Math.toRadians(-80.0);
+            model.leftArm.zRot = 0.0f;
+            model.leftLeg.xRot = (float)Math.toRadians(-20.0);
+            model.rightLeg.xRot = (float)Math.toRadians(20.0);
         }
-        else
-        {
-            if(index == 3)
-            {
-                model.rightLeg.xRot = (float) Math.toRadians(-90F);
-                model.rightLeg.yRot = (float) Math.toRadians(15F);
-                model.leftLeg.xRot = (float) Math.toRadians(-90F);
-                model.leftLeg.yRot = (float) Math.toRadians(-15F);
-                model.rightArm.xRot = (float) Math.toRadians(-75F);
-                model.rightArm.yRot = (float) Math.toRadians(110F);
-                model.rightArm.zRot = (float) Math.toRadians(0F);
-                model.leftArm.xRot = (float) Math.toRadians(-105F);
-                model.leftArm.yRot = (float) Math.toRadians(-20F);
-                model.leftArm.zRot = 0F;
-            }
-            else
-            {
-                model.rightLeg.xRot = (float) Math.toRadians(0F);
-                model.rightLeg.yRot = (float) Math.toRadians(0F);
-                model.leftLeg.xRot = (float) Math.toRadians(0F);
-                model.leftLeg.yRot = (float) Math.toRadians(0F);
-                model.rightArm.xRot = (float) Math.toRadians(-10F);
-                model.rightArm.zRot = (float) Math.toRadians(25F);
-                model.leftArm.xRot = (float) Math.toRadians(-80F);
-                model.leftArm.zRot = 0F;
-                model.leftLeg.xRot = (float) Math.toRadians(-20F);
-                model.rightLeg.xRot = (float) Math.toRadians(20F);
-            }
-        }
-
-        if(entity.getControllingPassenger() == player)
-        {
+        if (entity.getControllingPassenger() == player) {
             float wheelAngle = entity.prevRenderWheelAngle + (entity.renderWheelAngle - entity.prevRenderWheelAngle) * partialTicks;
-            float wheelAngleNormal = wheelAngle / 45F;
-            float turnRotation = wheelAngleNormal * 6F;
-            model.rightArm.xRot = (float) Math.toRadians(-65F - turnRotation);
-            model.rightArm.yRot = (float) Math.toRadians(-7F);
-            model.leftArm.xRot = (float) Math.toRadians(-65F + turnRotation);
-            model.leftArm.yRot = (float) Math.toRadians(7F);
+            float wheelAngleNormal = wheelAngle / 45.0f;
+            float turnRotation = wheelAngleNormal * 6.0f;
+            model.rightArm.xRot = (float)Math.toRadians(-65.0f - turnRotation);
+            model.rightArm.yRot = (float)Math.toRadians(-7.0);
+            model.leftArm.xRot = (float)Math.toRadians(-65.0f + turnRotation);
+            model.leftArm.yRot = (float)Math.toRadians(7.0);
         }
     }
 
-    @Nullable
     @Override
-    public EntityRayTracer.IRayTraceTransforms getRayTraceTransforms()
-    {
-        return (tracer, transforms, parts) ->
-        {
-            EntityRayTracer.createTransformListForPart(SpecialModels.OFF_ROADER_BODY, parts, transforms);
-            EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
-                    EntityRayTracer.MatrixTransformation.createTranslation(-0.3125F, 0.35F, 0.2F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45F),
-                    EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.02F, 0.0F),
-                    EntityRayTracer.MatrixTransformation.createScale(0.75F));
-            EntityRayTracer.createFuelPartTransforms(ModEntities.OFF_ROADER.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
-            EntityRayTracer.createKeyPortTransforms(ModEntities.OFF_ROADER.get(), parts, transforms);
+    @Nullable
+    public EntityRayTracer.IRayTraceTransforms getRayTraceTransforms() {
+        return (tracer, transforms, parts) -> {
+            EntityRayTracer.createTransformListForPart((ISpecialModel)SpecialModels.OFF_ROADER_BODY, (HashMap<EntityRayTracer.RayTracePart, List<EntityRayTracer.MatrixTransformation>>)parts, (List<EntityRayTracer.MatrixTransformation>)transforms, new EntityRayTracer.MatrixTransformation[0]);
+            EntityRayTracer.createTransformListForPart((ISpecialModel)SpecialModels.GO_KART_STEERING_WHEEL, (HashMap<EntityRayTracer.RayTracePart, List<EntityRayTracer.MatrixTransformation>>)parts, (List<EntityRayTracer.MatrixTransformation>)transforms, EntityRayTracer.MatrixTransformation.createTranslation(-0.3125f, 0.35f, 0.2f), EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45.0f), EntityRayTracer.MatrixTransformation.createTranslation(0.0f, -0.02f, 0.0f), EntityRayTracer.MatrixTransformation.createScale(0.75f));
+            EntityRayTracer.createFuelPartTransforms((EntityType<? extends VehicleEntity>)((EntityType)ModEntities.OFF_ROADER.get()), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
+            EntityRayTracer.createKeyPortTransforms((EntityType<? extends VehicleEntity>)((EntityType)ModEntities.OFF_ROADER.get()), parts, transforms);
         };
     }
 }
+

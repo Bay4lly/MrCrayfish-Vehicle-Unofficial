@@ -1,354 +1,283 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.google.common.base.Preconditions
+ *  com.google.common.collect.ImmutableMap
+ *  javax.annotation.Nullable
+ *  net.minecraft.core.BlockPos
+ *  net.minecraft.core.Direction
+ *  net.minecraft.core.HolderLookup$Provider
+ *  net.minecraft.nbt.CompoundTag
+ *  net.minecraft.world.level.Level
+ *  net.minecraft.world.level.block.entity.BlockEntity
+ *  net.minecraft.world.level.block.entity.BlockEntityType
+ *  net.minecraft.world.level.block.state.BlockState
+ *  net.minecraft.world.level.block.state.properties.Property
+ *  net.neoforged.neoforge.capabilities.Capabilities$FluidHandler
+ *  net.neoforged.neoforge.fluids.capability.IFluidHandler
+ *  org.apache.commons.lang3.tuple.Pair
+ */
 package com.mrcrayfish.vehicle.tileentity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.Config;
-import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.block.FluidPipeBlock;
 import com.mrcrayfish.vehicle.block.FluidPumpBlock;
 import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.tileentity.PipeTileEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
-import java.lang.ref.WeakReference;
-import java.util.*;
-import java.util.function.Function;
-
-/**
- * Author: MrCrayfish
- */
-public class PumpTileEntity extends PipeTileEntity
-{
+public class PumpTileEntity
+extends PipeTileEntity {
     private int lastHandlerIndex;
     private boolean validatedNetwork;
-    private Map<BlockPos, PipeNode> fluidNetwork = new HashMap<>();
-    private List<Pair<BlockPos, Direction>> fluidHandlers = new ArrayList<>();
+    private Map<BlockPos, PipeNode> fluidNetwork = new HashMap<BlockPos, PipeNode>();
+    private List<Pair<BlockPos, Direction>> fluidHandlers = new ArrayList<Pair<BlockPos, Direction>>();
     private PowerMode powerMode = PowerMode.ALWAYS_ACTIVE;
 
-    public PumpTileEntity(BlockPos pos, BlockState state)
-    {
-        super(ModTileEntities.FLUID_PUMP.get(), pos, state);
+    public PumpTileEntity(BlockPos pos, BlockState state) {
+        super((BlockEntityType)ModTileEntities.FLUID_PUMP.get(), pos, state);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, PumpTileEntity blockEntity)
-    {
-        if(blockEntity.level != null && !blockEntity.level.isClientSide())
-        {
-            if(!blockEntity.validatedNetwork)
-            {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, PumpTileEntity blockEntity) {
+        if (blockEntity.level != null && !blockEntity.level.isClientSide()) {
+            if (!blockEntity.validatedNetwork) {
                 blockEntity.validatedNetwork = true;
                 blockEntity.generatePipeNetwork();
             }
-
             blockEntity.pumpFluid();
         }
     }
 
-    public PowerMode getPowerMode()
-    {
+    public PowerMode getPowerMode() {
         return this.powerMode;
     }
 
-    public Map<BlockPos, PipeNode> getFluidNetwork()
-    {
+    public Map<BlockPos, PipeNode> getFluidNetwork() {
         return ImmutableMap.copyOf(this.fluidNetwork);
     }
 
-    public void invalidatePipeNetwork()
-    {
+    public void invalidatePipeNetwork() {
         this.validatedNetwork = false;
     }
 
-    private void pumpFluid()
-    {
-        if(this.fluidHandlers.isEmpty() || this.level == null)
+    private void pumpFluid() {
+        if (this.fluidHandlers.isEmpty() || this.level == null) {
             return;
-
-        if(!this.powerMode.test(this))
+        }
+        if (!this.powerMode.test(this)) {
             return;
-
+        }
         List<IFluidHandler> handlers = this.getFluidInteractionHandlersOnNetwork(this.level);
-        if(handlers.isEmpty())
+        if (handlers.isEmpty()) {
             return;
-
+        }
         Optional<IFluidHandler> source = this.getSourceFluidInteractionHandler(this.level);
-        if(!source.isPresent())
+        if (!source.isPresent()) {
             return;
-
+        }
         IFluidHandler sourceInteractionHandler = source.get();
         int outputCount = handlers.size();
-        int remainingAmount = Math.min(sourceInteractionHandler.getFluidInTank(0).getAmount(), Config.SERVER.pumpTransferAmount.get());
+        int remainingAmount = Math.min(sourceInteractionHandler.getFluidInTank(0).getAmount(), (Integer)Config.SERVER.pumpTransferAmount.get());
         int splitAmount = remainingAmount / outputCount;
-        if(splitAmount > 0)
-        {
-            Iterator<IFluidHandler> it = handlers.listIterator();
-            while(it.hasNext())
-            {
-                int transferredAmount = FluidUtils.transferFluid(sourceInteractionHandler, it.next(), splitAmount);
+        if (splitAmount > 0) {
+            ListIterator<IFluidHandler> it = handlers.listIterator();
+            while (it.hasNext()) {
+                int transferredAmount = FluidUtils.transferFluid(sourceInteractionHandler, (IFluidHandler)it.next(), splitAmount);
                 remainingAmount -= transferredAmount;
-                if(transferredAmount < splitAmount)
-                {
-                    it.remove();
-                }
+                if (transferredAmount >= splitAmount) continue;
+                it.remove();
             }
         }
-
-        // Ignore distributing if no fluid is remaining
-        if(remainingAmount <= 0)
+        if (remainingAmount <= 0) {
             return;
-
-        // If only one fluid handler left, just transfer the maximum amount of remaining fluid
-        if(handlers.size() == 1)
-        {
+        }
+        if (handlers.size() == 1) {
             FluidUtils.transferFluid(sourceInteractionHandler, handlers.get(0), remainingAmount);
             return;
         }
-
-        // Distributes the remaining fluid over handlers
-        while(remainingAmount > 0 && !handlers.isEmpty())
-        {
+        while (remainingAmount > 0 && !handlers.isEmpty()) {
             int index = this.lastHandlerIndex++ % handlers.size();
             int transferred = FluidUtils.transferFluid(sourceInteractionHandler, handlers.get(index), 1);
             remainingAmount -= transferred;
-            if(transferred == 0)
-            {
-                this.lastHandlerIndex--;
-                handlers.remove(index);
-            }
+            if (transferred != 0) continue;
+            --this.lastHandlerIndex;
+            handlers.remove(index);
         }
     }
 
-    // This can probably be optimised...
-    private void generatePipeNetwork()
-    {
-        Preconditions.checkNotNull(this.level);
-
-        // Removes the pump from the old network pipes
+    private void generatePipeNetwork() {
+        Preconditions.checkNotNull((Object)this.level);
         this.removePumpFromPipes();
-
         this.lastHandlerIndex = 0;
         this.fluidHandlers.clear();
         this.fluidNetwork.clear();
-
-        if(!this.powerMode.test(this))
+        if (!this.powerMode.test(this)) {
             return;
-
-        // Finds all the pipes in the network
-        Set<BlockPos> visited = new HashSet<>();
-        Queue<BlockPos> queue = new ArrayDeque<>();
+        }
+        HashSet<BlockPos> visited = new HashSet<BlockPos>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<BlockPos>();
         queue.add(this.worldPosition);
-        while(!queue.isEmpty())
-        {
-            BlockPos pos = queue.poll();
-
-            for(Direction direction : Direction.values())
-            {
-                BlockPos relativePos = pos.relative(direction);
-                if(visited.contains(relativePos))
-                    continue;
-
-                BlockState selfState = this.level.getBlockState(pos);
-                if(selfState.getBlock() instanceof FluidPipeBlock)
-                {
-                    if(!(selfState.getBlock() instanceof FluidPumpBlock) && this.level.hasNeighborSignal(pos))
-                        continue;
-
-                    if(!selfState.getValue(FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()]))
-                        continue;
-
-                    if(selfState.getBlock() instanceof FluidPumpBlock && selfState.getValue(FluidPumpBlock.DISABLED))
-                        continue;
-                }
-
-                if(relativePos.equals(this.worldPosition))
-                    continue;
-
-                BlockState relativeState = this.level.getBlockState(relativePos);
-                if(relativeState.getBlock() instanceof FluidPipeBlock)
-                {
-                    if(relativeState.getValue(FluidPipeBlock.CONNECTED_PIPES[direction.getOpposite().get3DDataValue()]))
-                    {
-                        visited.add(relativePos);
-                        queue.add(relativePos);
-                    }
-                }
+        while (!queue.isEmpty()) {
+            BlockPos pos2 = (BlockPos)queue.poll();
+            for (Direction direction : Direction.values()) {
+                BlockState relativeState;
+                BlockState selfState;
+                BlockPos relativePos = pos2.relative(direction);
+                if (visited.contains(relativePos) || (selfState = this.level.getBlockState(pos2)).getBlock() instanceof FluidPipeBlock && (!(selfState.getBlock() instanceof FluidPumpBlock) && this.level.hasNeighborSignal(pos2) || !((Boolean)selfState.getValue((Property)FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()])).booleanValue() || selfState.getBlock() instanceof FluidPumpBlock && ((Boolean)selfState.getValue((Property)FluidPumpBlock.DISABLED)).booleanValue()) || relativePos.equals((Object)this.worldPosition) || !((relativeState = this.level.getBlockState(relativePos)).getBlock() instanceof FluidPipeBlock) || !((Boolean)relativeState.getValue((Property)FluidPipeBlock.CONNECTED_PIPES[direction.getOpposite().get3DDataValue()])).booleanValue()) continue;
+                visited.add(relativePos);
+                queue.add(relativePos);
             }
         }
-
-        // Initialise pipe nodes
-        visited.forEach(pos -> this.fluidNetwork.put(pos, new PipeNode()));
-
-        // Link pipe nodes
-        this.fluidNetwork.forEach((pos, node) ->
-        {
+        visited.forEach(pos -> this.fluidNetwork.put((BlockPos)pos, new PipeNode()));
+        this.fluidNetwork.forEach((pos, node) -> {
             BlockState state = this.level.getBlockState(pos);
-            for(Direction direction : Direction.values())
-            {
-                if(state.getValue(FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()]))
-                {
-                    BlockEntity selfTileEntity = this.level.getBlockEntity(pos);
-                    if(selfTileEntity instanceof PipeTileEntity)
-                    {
-                        PipeTileEntity pipeTileEntity = (PipeTileEntity) selfTileEntity;
-                        pipeTileEntity.addPump(this.worldPosition);
-                        node.tileEntity = new WeakReference<>(pipeTileEntity);
-                        FluidNetworkHandler.instance().addPipeForUpdate(pipeTileEntity);
-                    }
-
-                    if(!(state.getBlock() instanceof FluidPumpBlock) && this.level.hasNeighborSignal(pos))
-                        continue;
-
-                    if(state.getBlock() instanceof FluidPumpBlock && state.getValue(FluidPumpBlock.DISABLED))
-                        continue;
-
-                    BlockPos relativePos = pos.relative(direction);
-                    if(this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) != null)
-                    {
-                        this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
-                    }
+            for (Direction direction : Direction.values()) {
+                if (!((Boolean)state.getValue((Property)FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()])).booleanValue()) continue;
+                BlockEntity selfTileEntity = this.level.getBlockEntity(pos);
+                if (selfTileEntity instanceof PipeTileEntity) {
+                    PipeTileEntity pipeTileEntity = (PipeTileEntity)selfTileEntity;
+                    pipeTileEntity.addPump(this.worldPosition);
+                    node.tileEntity = new WeakReference<PipeTileEntity>(pipeTileEntity);
+                    FluidNetworkHandler.instance().addPipeForUpdate(pipeTileEntity);
                 }
+                BlockPos relativePos = pos.relative(direction);
+                if (!(state.getBlock() instanceof FluidPumpBlock) && this.level.hasNeighborSignal(pos) || state.getBlock() instanceof FluidPumpBlock && ((Boolean)state.getValue((Property)FluidPumpBlock.DISABLED)).booleanValue() || this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) == null) continue;
+                this.fluidHandlers.add((Pair<BlockPos, Direction>)Pair.of(relativePos, direction.getOpposite()));
             }
         });
-
-        // Gets fluid handler directly next to the pump
         BlockState state = this.getBlockState();
-        for(Direction direction : Direction.values())
-        {
-            if(direction == state.getValue(FluidPumpBlock.DIRECTION).getOpposite())
-                continue;
-
+        for (Direction direction : Direction.values()) {
             BlockPos relativePos = this.worldPosition.relative(direction);
-            if(this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) != null)
-            {
-                this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
-            }
+            if (direction == ((Direction)state.getValue((Property)FluidPumpBlock.DIRECTION)).getOpposite() || this.level.getCapability(Capabilities.FluidHandler.BLOCK, relativePos, direction.getOpposite()) == null) continue;
+            this.fluidHandlers.add((Pair<BlockPos, Direction>)Pair.of(relativePos, direction.getOpposite()));
         }
     }
 
-    public void removePumpFromPipes()
-    {
-        this.fluidNetwork.forEach((pos, node) ->
-        {
-            PipeTileEntity tileEntity = node.tileEntity.get();
-            if(tileEntity != null)
-            {
+    public void removePumpFromPipes() {
+        this.fluidNetwork.forEach((pos, node) -> {
+            PipeTileEntity tileEntity = (PipeTileEntity)((Object)((Object)node.tileEntity.get()));
+            if (tileEntity != null) {
                 tileEntity.removePump(this.worldPosition);
                 FluidNetworkHandler.instance().addPipeForUpdate(tileEntity);
             }
         });
     }
 
-    public List<IFluidHandler> getFluidInteractionHandlersOnNetwork(Level world)
-    {
-        List<IFluidHandler> handlers = new ArrayList<>();
-        this.fluidHandlers.forEach(pair ->
-        {
-            if(world.isLoaded(pair.getLeft()))
-            {
-                BlockEntity tileEntity = world.getBlockEntity(pair.getLeft());
-                if(tileEntity != null)
-                {
-                    IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, pair.getLeft(), pair.getRight());
-                    if(handler != null) handlers.add(handler);
-                }
+    public List<IFluidHandler> getFluidInteractionHandlersOnNetwork(Level world) {
+        ArrayList<IFluidHandler> handlers = new ArrayList<IFluidHandler>();
+        this.fluidHandlers.forEach(pair -> {
+            IFluidHandler handler;
+            BlockEntity tileEntity;
+            if (world.isLoaded((BlockPos)pair.getLeft()) && (tileEntity = world.getBlockEntity((BlockPos)pair.getLeft())) != null && (handler = (IFluidHandler)world.getCapability(Capabilities.FluidHandler.BLOCK, (BlockPos)pair.getLeft(), ((Direction)pair.getRight()))) != null) {
+                handlers.add(handler);
             }
         });
         return handlers;
     }
 
-    public Optional<IFluidHandler> getSourceFluidInteractionHandler(Level world)
-    {
-        Direction direction = this.getBlockState().getValue(FluidPumpBlock.DIRECTION);
-        IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, this.worldPosition.relative(direction.getOpposite()), direction);
+    public Optional<IFluidHandler> getSourceFluidInteractionHandler(Level world) {
+        Direction direction = (Direction)this.getBlockState().getValue((Property)FluidPumpBlock.DIRECTION);
+        IFluidHandler handler = (IFluidHandler)world.getCapability(Capabilities.FluidHandler.BLOCK, this.worldPosition.relative(direction.getOpposite()), direction);
         return Optional.ofNullable(handler);
     }
 
-    public void cyclePowerMode()
-    {
+    public void cyclePowerMode() {
         this.powerMode = PowerMode.values()[(this.powerMode.ordinal() + 1) % PowerMode.values().length];
-        if(this.level != null && !this.level.isClientSide())
-        {
+        if (this.level != null && !this.level.isClientSide()) {
             CompoundTag compound = new CompoundTag();
-            this.saveAdditional(compound, this.level.registryAccess());
-            TileEntityUtil.sendUpdatePacket(this, compound);
+            this.saveAdditional(compound, (HolderLookup.Provider)this.level.registryAccess());
+            TileEntityUtil.sendUpdatePacket((BlockEntity)this, compound);
             BlockState state = this.getBlockState();
-            state = ((FluidPumpBlock) state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
-            this.level.setBlock(this.worldPosition, state, Block.UPDATE_CLIENTS | Block.UPDATE_IMMEDIATE);
+            state = ((FluidPumpBlock)state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
+            this.level.setBlock(this.worldPosition, state, 10);
         }
     }
 
     @Override
-    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
-    {
+    public void loadAdditional(CompoundTag compound, HolderLookup.Provider registries) {
         super.loadAdditional(compound, registries);
-        if(compound.contains("PowerMode", Tag.TAG_INT))
-        {
+        if (compound.contains("PowerMode", 3)) {
             this.powerMode = PowerMode.fromOrdinal(compound.getInt("PowerMode"));
         }
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries)
-    {
+    public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
         super.saveAdditional(compound, registries);
         compound.putInt("PowerMode", this.powerMode.ordinal());
     }
 
-    private void writePowerMode(CompoundTag compound)
-    {
+    private void writePowerMode(CompoundTag compound) {
         compound.putInt("PowerMode", this.powerMode.ordinal());
     }
 
-    private static class PipeNode
-    {
-        private WeakReference<PipeTileEntity> tileEntity;
-    }
-
-    public enum PowerMode
-    {
+    public static enum PowerMode {
         ALWAYS_ACTIVE("always", input -> true),
-        REQUIRES_SIGNAL_ON("on", input -> Objects.requireNonNull(input.level).hasNeighborSignal(input.worldPosition)),
-        REQUIRES_SIGNAL_OFF("off", input -> !Objects.requireNonNull(input.level).hasNeighborSignal(input.worldPosition));
+        REQUIRES_SIGNAL_ON("on", input -> Objects.requireNonNull(((PumpTileEntity)input).level).hasNeighborSignal(((PumpTileEntity)input).worldPosition)),
+        REQUIRES_SIGNAL_OFF("off", input -> !Objects.requireNonNull(((PumpTileEntity)input).level).hasNeighborSignal(((PumpTileEntity)input).worldPosition));
 
-        private static final String LANG_KEY_CHAT_PREFIX = Reference.MOD_ID + ".chat.pump.power";
+        private static final String LANG_KEY_CHAT_PREFIX = "vehicle.chat.pump.power";
         private String key;
         private Function<PumpTileEntity, Boolean> function;
 
-        PowerMode(String key, Function<PumpTileEntity, Boolean> function)
-        {
-            this.key = String.join(".", LANG_KEY_CHAT_PREFIX, key);
+        private PowerMode(String key, Function<PumpTileEntity, Boolean> function) {
+            this.key = String.join((CharSequence)".", LANG_KEY_CHAT_PREFIX, key);
             this.function = function;
         }
 
-        public boolean test(PumpTileEntity pump)
-        {
+        public boolean test(PumpTileEntity pump) {
             return this.function.apply(pump);
         }
 
-        public String getKey()
-        {
+        public String getKey() {
             return this.key;
         }
 
         @Nullable
-        public static PowerMode fromOrdinal(int ordinal)
-        {
-            if(ordinal < 0 || ordinal >= values().length)
+        public static PowerMode fromOrdinal(int ordinal) {
+            if (ordinal < 0 || ordinal >= PowerMode.values().length) {
                 return null;
-            return values()[ordinal];
+            }
+            return PowerMode.values()[ordinal];
+        }
+    }
+
+    private static class PipeNode {
+        private WeakReference<PipeTileEntity> tileEntity;
+
+        private PipeNode() {
         }
     }
 }
+
+
+

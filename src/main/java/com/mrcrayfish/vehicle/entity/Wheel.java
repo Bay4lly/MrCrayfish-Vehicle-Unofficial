@@ -1,14 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.world.phys.Vec3
+ *  net.neoforged.api.distmarker.Dist
+ *  net.neoforged.api.distmarker.OnlyIn
+ */
 package com.mrcrayfish.vehicle.entity;
 
+import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-/**
- * Author: MrCrayfish
- */
-public class Wheel
-{
+public class Wheel {
     private Vec3 offset;
     private Vec3 scale;
     private float width;
@@ -18,8 +23,7 @@ public class Wheel
     private boolean particles;
     private boolean render;
 
-    protected Wheel(Vec3 offset, Vec3 scale, float width, Side side, Position position, boolean autoScale, boolean particles, boolean render)
-    {
+    protected Wheel(Vec3 offset, Vec3 scale, float width, Side side, Position position, boolean autoScale, boolean particles, boolean render) {
         this.offset = offset;
         this.scale = scale;
         this.width = width;
@@ -30,216 +34,166 @@ public class Wheel
         this.render = render;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public float getWheelRotation(LandVehicleEntity vehicle, float partialTicks)
-    {
-        if(position == Position.REAR)
-        {
+    @OnlyIn(value=Dist.CLIENT)
+    public float getWheelRotation(LandVehicleEntity vehicle, float partialTicks) {
+        if (this.position == Position.REAR) {
             return vehicle.prevRearWheelRotation + (vehicle.rearWheelRotation - vehicle.prevRearWheelRotation) * partialTicks;
         }
         return vehicle.prevFrontWheelRotation + (vehicle.frontWheelRotation - vehicle.prevFrontWheelRotation) * partialTicks;
     }
 
-    public Vec3 getOffset()
-    {
+    public Vec3 getOffset() {
         return this.offset;
     }
 
-    public Vec3 getScale()
-    {
+    public Vec3 getScale() {
         return this.scale;
     }
 
-    public float getOffsetX()
-    {
-        return (float) this.offset.x;
+    public float getOffsetX() {
+        return (float)this.offset.x;
     }
 
-    public float getOffsetY()
-    {
-        return (float) this.offset.y;
+    public float getOffsetY() {
+        return (float)this.offset.y;
     }
 
-    public float getOffsetZ()
-    {
-        return (float) this.offset.z;
+    public float getOffsetZ() {
+        return (float)this.offset.z;
     }
 
-    public float getWidth()
-    {
-        return width;
+    public float getWidth() {
+        return this.width;
     }
 
-    public float getScaleX()
-    {
-        return (float) this.scale.x;
+    public float getScaleX() {
+        return (float)this.scale.x;
     }
 
-    public float getScaleY()
-    {
-        return (float) this.scale.y;
+    public float getScaleY() {
+        return (float)this.scale.y;
     }
 
-    public float getScaleZ()
-    {
-        return (float) this.scale.z;
+    public float getScaleZ() {
+        return (float)this.scale.z;
     }
 
-    public Side getSide()
-    {
-        return side;
+    public Side getSide() {
+        return this.side;
     }
 
-    public Position getPosition()
-    {
-        return position;
+    public Position getPosition() {
+        return this.position;
     }
 
-    void updateScale(double scale)
-    {
+    void updateScale(double scale) {
         double xScale = this.scale.x != 0.0 ? this.scale.x : scale;
         double yScale = this.scale.y != 0.0 ? this.scale.y : scale;
         double zScale = this.scale.z != 0.0 ? this.scale.z : scale;
         this.scale = new Vec3(xScale, yScale, zScale);
     }
 
-    /**
-     * Indicates that the wheel scale is to be generated. This is only used when loading vehicle
-     * properties and has no other significant use.
-     *
-     * @return true if the wheel auto scaled
-     */
-    public boolean isAutoScale()
-    {
+    public boolean isAutoScale() {
         return this.autoScale;
     }
 
-    /**
-     * Determines if this wheels should spawn particles. Depending on the drivetrain of a vehicle,
-     * the spawning of particles can be disabled. For instance, a rear wheel drive vehicle will only
-     * spawn particles for the rear wheels as that's where the force to push the vehicle comes from.
-     * It should be noted that there is no system in place that determines the drivetrain of a vehicle
-     * and the spawning of particles is specified when adding wheels.
-     *
-     * @return if the wheel should spawn particles
-     */
-    public boolean shouldSpawnParticles()
-    {
-        return particles;
+    public boolean shouldSpawnParticles() {
+        return this.particles;
     }
 
-    /**
-     * Determines if this wheel should render. Some vehicles have wheels that are manually rendered
-     * due the fact they need extra tranformations and rotations, and therefore shouldn't use the
-     * wheel system and rather just be a placeholder.
-     *
-     * @return if the wheel should be rendered
-     */
-    public boolean shouldRender()
-    {
-        return render;
+    public boolean shouldRender() {
+        return this.render;
     }
 
-    public Wheel copy()
-    {
+    public Wheel copy() {
         return new Wheel(this.offset, this.scale, this.width, this.side, this.position, this.autoScale, this.particles, this.render);
     }
 
-    public enum Side
-    {
-        LEFT(-1), RIGHT(1), NONE(0);
-
-        int offset;
-
-        Side(int offset)
-        {
-            this.offset = offset;
-        }
-
-        public int getOffset()
-        {
-            return offset;
-        }
-    }
-
-    public enum Position
-    {
-        FRONT, REAR, NONE
-    }
-
-    public static Builder builder()
-    {
+    public static Builder builder() {
         return new Builder();
     }
 
-    public static class Builder
-    {
+    public static enum Side {
+        LEFT(-1),
+        RIGHT(1),
+        NONE(0);
+
+        int offset;
+
+        private Side(int offset) {
+            this.offset = offset;
+        }
+
+        public int getOffset() {
+            return this.offset;
+        }
+    }
+
+    public static enum Position {
+        FRONT,
+        REAR,
+        NONE;
+
+    }
+
+    public static class Builder {
         private Vec3 offset = Vec3.ZERO;
         private Vec3 scale = Vec3.ZERO;
-        private float width = 4.0F;
+        private float width = 4.0f;
         private Side side = Side.NONE;
         private Position position = Position.NONE;
         private boolean autoScale = false;
         private boolean particles = false;
         private boolean render = true;
 
-        public Builder setOffset(double x, double y, double z)
-        {
+        public Builder setOffset(double x, double y, double z) {
             this.offset = new Vec3(x, y, z);
             return this;
         }
 
-        public Builder setScale(double scale)
-        {
+        public Builder setScale(double scale) {
             this.scale = new Vec3(scale, scale, scale);
             return this;
         }
 
-        public Builder setScale(double scaleX, double scaleY, double scaleZ)
-        {
+        public Builder setScale(double scaleX, double scaleY, double scaleZ) {
             this.scale = new Vec3(scaleX, scaleY, scaleZ);
             return this;
         }
 
-        public Builder setWidth(float width)
-        {
+        public Builder setWidth(float width) {
             this.width = width;
             return this;
         }
 
-        public Builder setSide(Side side)
-        {
+        public Builder setSide(Side side) {
             this.side = side;
             return this;
         }
 
-        public Builder setPosition(Position position)
-        {
+        public Builder setPosition(Position position) {
             this.position = position;
             return this;
         }
 
-        public Builder setAutoScale(boolean autoScale)
-        {
+        public Builder setAutoScale(boolean autoScale) {
             this.autoScale = autoScale;
             return this;
         }
 
-        public Builder setParticles(boolean particles)
-        {
+        public Builder setParticles(boolean particles) {
             this.particles = particles;
             return this;
         }
 
-        public Builder setRender(boolean render)
-        {
+        public Builder setRender(boolean render) {
             this.render = render;
             return this;
         }
 
-        public Wheel build()
-        {
+        public Wheel build() {
             return new Wheel(this.offset, this.scale, this.width, this.side, this.position, this.autoScale, this.particles, this.render);
         }
     }
 }
+

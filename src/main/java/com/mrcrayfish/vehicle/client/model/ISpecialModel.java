@@ -1,11 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.client.resources.model.BakedModel
+ */
 package com.mrcrayfish.vehicle.client.model;
 
 import net.minecraft.client.resources.model.BakedModel;
 
-/**
- * Author: MrCrayfish
- */
-public interface ISpecialModel
-{
-    BakedModel getModel();
+public interface ISpecialModel {
+    public BakedModel getModel();
 }
+

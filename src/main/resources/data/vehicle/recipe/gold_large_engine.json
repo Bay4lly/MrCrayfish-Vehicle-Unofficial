@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "vehicle:iron_large_engine"
+    },
+    "U": {
+      "tag": "c:ingots/gold"
+    }
+  },
+  "pattern": [
+    " U ",
+    "UEU",
+    " U "
+  ],
+  "result": {
+    "id": "vehicle:gold_large_engine"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "vehicle:fuel_drum"
+    },
+    "I": {
+      "tag": "c:ingots/gold"
+    }
+  },
+  "pattern": [
+    "III",
+    "IFI",
+    "III"
+  ],
+  "result": {
+    "id": "vehicle:industrial_fuel_drum"
+  },
+  "show_notification": true
+}

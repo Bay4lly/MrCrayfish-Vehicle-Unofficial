@@ -1,3 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.sounds.SoundEvent
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.level.Level
+ *  net.minecraft.world.phys.AABB
+ */
 package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.PlaneEntity;
@@ -7,88 +16,65 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
-/**
- * Author: MrCrayfish
- */
-public class SportsPlaneEntity extends PlaneEntity
-{
+public class SportsPlaneEntity
+extends PlaneEntity {
     public float wheelSpeed;
     public float wheelRotation;
     public float prevWheelRotation;
-
     public float propellerSpeed;
     public float propellerRotation;
     public float prevPropellerRotation;
 
-    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, Level worldIn)
-    {
+    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, Level worldIn) {
         super(type, worldIn);
-        this.setAccelerationSpeed(0.5F);
-        this.setMaxSpeed(25F);
+        this.setAccelerationSpeed(0.5f);
+        this.setMaxSpeed(25.0f);
         this.setMaxTurnAngle(25);
         this.setTurnSensitivity(2);
-        this.setFuelCapacity(75000F);
-        this.setFuelConsumption(1.0F);
+        this.setFuelCapacity(75000.0f);
+        this.setFuelConsumption(1.0f);
     }
 
     @Override
-    public AABB getBoundingBoxForCulling()
-    {
+    public AABB getBoundingBoxForCulling() {
         return this.getBoundingBox().inflate(1.5);
     }
 
     @Override
-    public void updateVehicle()
-    {
-        prevWheelRotation = wheelRotation;
-        prevPropellerRotation = propellerRotation;
-
-        if(this.onGround())
-        {
-            wheelSpeed = currentSpeed / 30F;
-        }
-        else
-        {
-            wheelSpeed *= 0.95F;
-        }
-        wheelRotation -= (90F * wheelSpeed);
-
-        if(this.canDrive() && this.getControllingPassenger() != null)
-        {
-            propellerSpeed += 1F;
-            if(propellerSpeed > 120F)
-            {
-                propellerSpeed = 120F;
+    public void updateVehicle() {
+        this.prevWheelRotation = this.wheelRotation;
+        this.prevPropellerRotation = this.propellerRotation;
+        this.wheelSpeed = this.onGround() ? this.currentSpeed / 30.0f : (this.wheelSpeed *= 0.95f);
+        this.wheelRotation -= 90.0f * this.wheelSpeed;
+        if (this.canDrive() && this.getControllingPassenger() != null) {
+            this.propellerSpeed += 1.0f;
+            if (this.propellerSpeed > 120.0f) {
+                this.propellerSpeed = 120.0f;
             }
+        } else {
+            this.propellerSpeed *= 0.95f;
         }
-        else
-        {
-            propellerSpeed *= 0.95F;
-        }
-        propellerRotation += propellerSpeed;
+        this.propellerRotation += this.propellerSpeed;
     }
 
     @Override
-    public SoundEvent getEngineSound()
-    {
-        return ModSounds.ENTITY_SPORTS_PLANE_ENGINE.get();
+    public SoundEvent getEngineSound() {
+        return (SoundEvent)ModSounds.ENTITY_SPORTS_PLANE_ENGINE.get();
     }
 
     @Override
-    public boolean canBeColored()
-    {
+    public boolean canBeColored() {
         return true;
     }
 
     @Override
-    protected float getModifiedAccelerationSpeed()
-    {
-        return super.getModifiedAccelerationSpeed() * (propellerSpeed / 120F);
+    protected float getModifiedAccelerationSpeed() {
+        return super.getModifiedAccelerationSpeed() * (this.propellerSpeed / 120.0f);
     }
 
     @Override
-    public boolean canMountTrailer()
-    {
+    public boolean canMountTrailer() {
         return false;
     }
 }
+

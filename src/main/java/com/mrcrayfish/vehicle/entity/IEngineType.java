@@ -1,19 +1,22 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.network.chat.Component
+ *  net.minecraft.resources.ResourceLocation
+ */
 package com.mrcrayfish.vehicle.entity;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Author: MrCrayfish
- */
-public interface IEngineType
-{
-    ResourceLocation getId();
+public interface IEngineType {
+    public ResourceLocation getId();
 
-    int hashCode();
+    public int hashCode();
 
-    default Component getEngineName()
-    {
-        return Component.translatable(this.getId().getNamespace() + ".engine_type." + this.getId().getPath() + ".name");
+    default public Component getEngineName() {
+        return Component.translatable((String)(this.getId().getNamespace() + ".engine_type." + this.getId().getPath() + ".name"));
     }
 }
+

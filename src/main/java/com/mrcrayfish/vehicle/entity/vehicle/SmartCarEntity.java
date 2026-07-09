@@ -1,3 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.sounds.SoundEvent
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.level.Level
+ */
 package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
@@ -6,58 +14,47 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-/**
- * Author: MrCrayfish
- */
-public class SmartCarEntity extends LandVehicleEntity
-{
-    public SmartCarEntity(EntityType<? extends SmartCarEntity> type, Level worldIn)
-    {
+public class SmartCarEntity
+extends LandVehicleEntity {
+    public SmartCarEntity(EntityType<? extends SmartCarEntity> type, Level worldIn) {
         super(type, worldIn);
-        this.setMaxSpeed(15F);
-        this.stepHeight = 1F;
+        this.setMaxSpeed(15.0f);
+        this.stepHeight = 1.0f;
     }
 
     @Override
-    public SoundEvent getEngineSound()
-    {
-        return ModSounds.ENTITY_BUMPER_CAR_ENGINE.get();
+    public SoundEvent getEngineSound() {
+        return (SoundEvent)ModSounds.ENTITY_BUMPER_CAR_ENGINE.get();
     }
 
     @Override
-    public float getMinEnginePitch()
-    {
-        return 0.8F;
+    public float getMinEnginePitch() {
+        return 0.8f;
     }
 
     @Override
-    public float getMaxEnginePitch()
-    {
-        return 1.6F;
+    public float getMaxEnginePitch() {
+        return 1.6f;
     }
 
     @Override
-    public boolean canBeColored()
-    {
+    public boolean canBeColored() {
         return true;
     }
 
     @Override
-    public boolean canTowTrailer()
-    {
+    public boolean canTowTrailer() {
         return true;
     }
 
     @Override
-    public boolean canMountTrailer()
-    {
+    public boolean canMountTrailer() {
         return false;
     }
 
-    //TODO remove and add key support
     @Override
-    public boolean isLockable()
-    {
+    public boolean isLockable() {
         return false;
     }
 }
+

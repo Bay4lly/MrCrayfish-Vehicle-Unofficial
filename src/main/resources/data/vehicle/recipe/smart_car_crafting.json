@@ -1,0 +1,26 @@
+{
+  "type": "vehicle:workstation",
+  "materials": [
+    {
+      "count": 80,
+      "tag": "c:ingots/iron"
+    },
+    {
+      "count": 8,
+      "item": "minecraft:black_wool"
+    },
+    {
+      "count": 6,
+      "tag": "c:glass_panes"
+    },
+    {
+      "count": 8,
+      "item": "minecraft:redstone"
+    },
+    {
+      "count": 16,
+      "item": "vehicle:panel"
+    }
+  ],
+  "vehicle": "vehicle:smart_car"
+}

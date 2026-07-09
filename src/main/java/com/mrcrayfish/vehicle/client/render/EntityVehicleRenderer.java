@@ -1,8 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.blaze3d.vertex.PoseStack
+ *  com.mojang.math.Axis
+ *  net.minecraft.client.renderer.MultiBufferSource
+ *  net.minecraft.client.renderer.entity.EntityRenderer
+ *  net.minecraft.client.renderer.entity.EntityRendererProvider$Context
+ *  net.minecraft.resources.ResourceLocation
+ *  net.minecraft.util.Mth
+ */
 package com.mrcrayfish.vehicle.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
+import com.mrcrayfish.vehicle.client.render.AbstractVehicleRenderer;
 import com.mrcrayfish.vehicle.entity.EntityJack;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -11,50 +24,40 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-/**
- * Author: MrCrayfish
- */
-public class EntityVehicleRenderer<T extends VehicleEntity & EntityRayTracer.IEntityRayTraceable> extends EntityRenderer<T>
-{
+public class EntityVehicleRenderer<T extends VehicleEntity>
+extends EntityRenderer<T> {
     private final AbstractVehicleRenderer<T> wrapper;
 
-    public EntityVehicleRenderer(EntityRendererProvider.Context renderManager, AbstractVehicleRenderer<T> wrapper)
-    {
+    public EntityVehicleRenderer(EntityRendererProvider.Context renderManager, AbstractVehicleRenderer<T> wrapper) {
         super(renderManager);
         this.wrapper = wrapper;
     }
 
-    @Override
-    public ResourceLocation getTextureLocation(T entity)
-    {
+    public ResourceLocation getTextureLocation(T entity) {
         return null;
     }
 
-    @Override
-    public void render(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
-    {
-        if(!entity.isAlive())
+    public void render(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light) {
+        if (!entity.isAlive()) {
             return;
-
-        if(entity.getVehicle() instanceof EntityJack)
+        }
+        if (entity.getVehicle() instanceof EntityJack) {
             return;
-
+        }
         matrixStack.pushPose();
-        wrapper.applyPreRotations(entity, matrixStack, partialTicks);
+        this.wrapper.applyPreRotations(entity, matrixStack, partialTicks);
         matrixStack.mulPose(Axis.YP.rotationDegrees(-entityYaw));
-        this.setupBreakAnimation(entity, matrixStack, partialTicks);
-        wrapper.setupTransformsAndRender(entity, matrixStack, renderTypeBuffer, partialTicks, light);
+        this.setupBreakAnimation((VehicleEntity)entity, matrixStack, partialTicks);
+        this.wrapper.setupTransformsAndRender(entity, matrixStack, renderTypeBuffer, partialTicks, light);
         matrixStack.popPose();
-
         EntityRayTracer.instance().renderRayTraceElements(entity, matrixStack, renderTypeBuffer, entityYaw);
     }
 
-    private void setupBreakAnimation(VehicleEntity vehicle, PoseStack matrixStack, float partialTicks)
-    {
-        float timeSinceHit = (float) vehicle.getTimeSinceHit() - partialTicks;
-        if(timeSinceHit > 0.0F)
-        {
-            matrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(timeSinceHit) * timeSinceHit));
+    private void setupBreakAnimation(VehicleEntity vehicle, PoseStack matrixStack, float partialTicks) {
+        float timeSinceHit = (float)vehicle.getTimeSinceHit() - partialTicks;
+        if (timeSinceHit > 0.0f) {
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin((float)timeSinceHit) * timeSinceHit));
         }
     }
 }
+

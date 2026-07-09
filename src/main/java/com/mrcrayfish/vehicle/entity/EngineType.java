@@ -1,28 +1,30 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.resources.ResourceLocation
+ */
 package com.mrcrayfish.vehicle.entity;
 
-import com.mrcrayfish.vehicle.Reference;
+import com.mrcrayfish.vehicle.entity.IEngineType;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Author: MrCrayfish
- */
 public enum EngineType implements IEngineType
 {
-    NONE(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "none")),
-    SMALL_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "small_motor")),
-    LARGE_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "large_motor")),
-    ELECTRIC_MOTOR(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "electric_motor"));
+    NONE(ResourceLocation.fromNamespaceAndPath((String)"vehicle", (String)"none")),
+    SMALL_MOTOR(ResourceLocation.fromNamespaceAndPath((String)"vehicle", (String)"small_motor")),
+    LARGE_MOTOR(ResourceLocation.fromNamespaceAndPath((String)"vehicle", (String)"large_motor")),
+    ELECTRIC_MOTOR(ResourceLocation.fromNamespaceAndPath((String)"vehicle", (String)"electric_motor"));
 
     private final ResourceLocation id;
 
-    EngineType(ResourceLocation id)
-    {
+    private EngineType(ResourceLocation id) {
         this.id = id;
     }
 
     @Override
-    public ResourceLocation getId()
-    {
+    public ResourceLocation getId() {
         return this.id;
     }
 }
+

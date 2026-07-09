@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "vehicle:iron_small_engine"
+    },
+    "U": {
+      "tag": "c:ingots/gold"
+    }
+  },
+  "pattern": [
+    " U ",
+    "UEU",
+    " U "
+  ],
+  "result": {
+    "id": "vehicle:gold_small_engine"
+  },
+  "show_notification": true
+}

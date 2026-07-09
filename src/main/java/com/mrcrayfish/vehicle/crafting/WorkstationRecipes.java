@@ -1,22 +1,29 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  javax.annotation.Nullable
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.level.Level
+ */
 package com.mrcrayfish.vehicle.crafting;
 
+import com.mrcrayfish.vehicle.crafting.WorkstationRecipe;
 import com.mrcrayfish.vehicle.init.ModRecipeTypes;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.stream.Collectors;
-
-/**
- * Author: MrCrayfish
- */
-public class WorkstationRecipes
-{
+public class WorkstationRecipes {
     @Nullable
-    public static WorkstationRecipe getRecipe(EntityType<?> entityType, Level world)
-    {
-        List<WorkstationRecipe> recipes = world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.value().getType() == ModRecipeTypes.WORKSTATION.get()).map(recipe -> (WorkstationRecipe) recipe.value()).collect(Collectors.toList());
-        return recipes.stream().filter(recipe -> recipe.getVehicle() == entityType).findFirst().orElse(null);
+    public static WorkstationRecipe getRecipe(EntityType<?> entityType, Level world) {
+        return world.getRecipeManager().getAllRecipesFor(ModRecipeTypes.WORKSTATION.get()).stream()
+            .map(net.minecraft.world.item.crafting.RecipeHolder::value)
+            .filter(recipe -> recipe.getVehicle() == entityType)
+            .findFirst()
+            .orElse(null);
     }
 }
+

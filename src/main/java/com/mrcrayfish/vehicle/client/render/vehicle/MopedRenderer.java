@@ -1,12 +1,40 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.blaze3d.vertex.PoseStack
+ *  com.mojang.blaze3d.vertex.VertexConsumer
+ *  com.mojang.math.Axis
+ *  javax.annotation.Nullable
+ *  net.minecraft.client.model.PlayerModel
+ *  net.minecraft.client.model.geom.ModelPart
+ *  net.minecraft.client.renderer.MultiBufferSource
+ *  net.minecraft.client.renderer.RenderType
+ *  net.minecraft.client.renderer.Sheets
+ *  net.minecraft.client.renderer.blockentity.ChestRenderer
+ *  net.minecraft.client.renderer.texture.OverlayTexture
+ *  net.minecraft.client.resources.model.BakedModel
+ *  net.minecraft.client.resources.model.Material
+ *  net.minecraft.util.Mth
+ *  net.minecraft.world.entity.Entity
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.entity.player.Player
+ *  net.minecraft.world.item.ItemDisplayContext
+ *  net.minecraft.world.item.ItemStack
+ *  net.minecraft.world.phys.Vec3
+ */
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
+import com.mrcrayfish.vehicle.client.model.ISpecialModel;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractMotorcycleRenderer;
+import com.mrcrayfish.vehicle.client.render.AbstractVehicleRenderer;
 import com.mrcrayfish.vehicle.common.Seat;
+import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.Wheel;
 import com.mrcrayfish.vehicle.entity.vehicle.MopedEntity;
@@ -14,6 +42,11 @@ import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.item.IDyeable;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -24,34 +57,27 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
-import java.util.Calendar;
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class MopedRenderer extends AbstractMotorcycleRenderer<MopedEntity>
-{
+public class MopedRenderer
+extends AbstractMotorcycleRenderer<MopedEntity> {
     private final ModelPart lid;
     private final ModelPart base;
     private final ModelPart lock;
     public final boolean isChristmas;
+    protected final AbstractVehicleRenderer.PropertyFunction<MopedEntity, Boolean> hasChestProperty = new AbstractVehicleRenderer.PropertyFunction<MopedEntity, Boolean>(MopedEntity::hasChest, false);
+    protected final AbstractVehicleRenderer.PropertyFunction<MopedEntity, Float> openProgressProperty = new AbstractVehicleRenderer.PropertyFunction<MopedEntity, Float>(MopedEntity::getOpenProgress, Float.valueOf(0.0f));
+    protected final AbstractVehicleRenderer.PropertyFunction<MopedEntity, Float> prevOpenProgressProperty = new AbstractVehicleRenderer.PropertyFunction<MopedEntity, Float>(MopedEntity::getPrevOpenProgress, Float.valueOf(0.0f));
 
-    protected final PropertyFunction<MopedEntity, Boolean> hasChestProperty = new PropertyFunction<>(MopedEntity::hasChest, false);
-    protected final PropertyFunction<MopedEntity, Float> openProgressProperty = new PropertyFunction<>(MopedEntity::getOpenProgress, 0F);
-    protected final PropertyFunction<MopedEntity, Float> prevOpenProgressProperty = new PropertyFunction<>(MopedEntity::getPrevOpenProgress, 0F);
-
-    public MopedRenderer(Supplier<VehicleProperties> properties)
-    {
+    public MopedRenderer(Supplier<VehicleProperties> properties) {
         super(properties);
         Calendar calendar = Calendar.getInstance();
-        this.isChristmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DAY_OF_MONTH) >= 24 && calendar.get(Calendar.DAY_OF_MONTH) <= 26;
+        this.isChristmas = calendar.get(2) + 1 == 12 && calendar.get(5) >= 24 && calendar.get(5) <= 26;
         ModelPart modelpart = ChestRenderer.createSingleBodyLayer().bakeRoot();
         this.base = modelpart.getChild("bottom");
         this.lid = modelpart.getChild("lid");
@@ -59,55 +85,39 @@ public class MopedRenderer extends AbstractMotorcycleRenderer<MopedEntity>
     }
 
     @Override
-    public void render(@Nullable MopedEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
-    {
+    public void render(@Nullable MopedEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light) {
         this.renderDamagedPart(vehicle, SpecialModels.MOPED_BODY.getModel(), matrixStack, renderTypeBuffer, light);
-
         matrixStack.pushPose();
-
-        matrixStack.translate(0.0, 0.0, 11.5 * 0.0625);
-        matrixStack.mulPose(Axis.XP.rotationDegrees(-22.5F));
-        if(vehicle != null)
-        {
+        matrixStack.translate(0.0, 0.0, 0.71875);
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-22.5f));
+        if (vehicle != null) {
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
-            float wheelAngleNormal = wheelAngle / 45F;
-            float turnRotation = wheelAngleNormal * 25F;
+            float wheelAngleNormal = wheelAngle / 45.0f;
+            float turnRotation = wheelAngleNormal * 25.0f;
             matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
-        matrixStack.mulPose(Axis.XP.rotationDegrees(22.5F));
-        matrixStack.translate(0.0, 0.0, -11.5 * 0.0625);
-
-        //Render handles bars
+        matrixStack.mulPose(Axis.XP.rotationDegrees(22.5f));
+        matrixStack.translate(0.0, 0.0, -0.71875);
         matrixStack.pushPose();
-        matrixStack.translate(0, (12.2739 - 8) * 0.0625, (16.4071 - 8) * 0.0625);
+        matrixStack.translate(0.0, 0.26711874999999996, 0.52544375);
         this.renderDamagedPart(vehicle, SpecialModels.MOPED_HANDLES.getModel(), matrixStack, renderTypeBuffer, light);
         matrixStack.popPose();
-
-        //Render front bar and mud guard
         matrixStack.pushPose();
-        {
-            matrixStack.translate(0, (4.1044 - 8) * 0.0625, (19.8181 - 8) * 0.0625);
-            this.renderDamagedPart(vehicle, SpecialModels.MOPED_MUD_GUARD.getModel(), matrixStack, renderTypeBuffer, light);
-        }
+        matrixStack.translate(0.0, -0.243475, 0.7386312500000001);
+        this.renderDamagedPart(vehicle, SpecialModels.MOPED_MUD_GUARD.getModel(), matrixStack, renderTypeBuffer, light);
         matrixStack.popPose();
-
-        //Render front wheel
-        ItemStack wheelStack = this.wheelStackProperty.get(vehicle);
-        if(!wheelStack.isEmpty())
-        {
+        ItemStack wheelStack = (ItemStack)this.wheelStackProperty.get(vehicle);
+        if (!wheelStack.isEmpty()) {
             matrixStack.pushPose();
-            VehicleProperties properties = this.vehiclePropertiesProperty.get(vehicle);
+            VehicleProperties properties = (VehicleProperties)this.vehiclePropertiesProperty.get(vehicle);
             Wheel wheel = properties.getFirstFrontWheel();
-            if(wheel != null)
-            {
-                matrixStack.translate(0.0, -8 * 0.0625, 0.0);
-                matrixStack.translate(0.0, -properties.getAxleOffset() * 0.0625F, 0.0);
-                matrixStack.translate(wheel.getOffsetX() * 0.0625, wheel.getOffsetY() * 0.0625, wheel.getOffsetZ() * 0.0625);
-                if(vehicle != null)
-                {
-                    float frontWheelSpin = Mth.lerp(partialTicks, vehicle.prevFrontWheelRotation, vehicle.frontWheelRotation);
-                    if(vehicle.isMoving())
-                    {
+            if (wheel != null) {
+                matrixStack.translate(0.0, -0.5, 0.0);
+                matrixStack.translate(0.0, (double)(-properties.getAxleOffset() * 0.0625f), 0.0);
+                matrixStack.translate((double)wheel.getOffsetX() * 0.0625, (double)wheel.getOffsetY() * 0.0625, (double)wheel.getOffsetZ() * 0.0625);
+                if (vehicle != null) {
+                    float frontWheelSpin = Mth.lerp((float)partialTicks, (float)vehicle.prevFrontWheelRotation, (float)vehicle.frontWheelRotation);
+                    if (vehicle.isMoving()) {
                         matrixStack.mulPose(Axis.XP.rotationDegrees(-frontWheelSpin));
                     }
                 }
@@ -118,19 +128,16 @@ public class MopedRenderer extends AbstractMotorcycleRenderer<MopedEntity>
             }
             matrixStack.popPose();
         }
-
         matrixStack.popPose();
-
-        if(this.hasChestProperty.get(vehicle))
-        {
+        if (this.hasChestProperty.get(vehicle).booleanValue()) {
             matrixStack.pushPose();
-            matrixStack.mulPose(Axis.YP.rotationDegrees(180F));
-            matrixStack.translate(0, 0, 6.5 * 0.0625F);
-            matrixStack.scale(0.5F, 0.5F, 0.5F);
-            matrixStack.translate(-0.5, 0, 0);
-            float progress = Mth.lerp(partialTicks, this.prevOpenProgressProperty.get(vehicle), this.openProgressProperty.get(vehicle));
-            progress = 1.0F - progress;
-            progress = 1.0F - progress * progress * progress;
+            matrixStack.mulPose(Axis.YP.rotationDegrees(180.0f));
+            matrixStack.translate(0.0, 0.0, 0.40625);
+            matrixStack.scale(0.5f, 0.5f, 0.5f);
+            matrixStack.translate(-0.5, 0.0, 0.0);
+            float progress = Mth.lerp((float)partialTicks, (float)this.prevOpenProgressProperty.get(vehicle).floatValue(), (float)this.openProgressProperty.get(vehicle).floatValue());
+            progress = 1.0f - progress;
+            progress = 1.0f - progress * progress * progress;
             Material renderMaterial = this.isChristmas ? Sheets.CHEST_XMAS_LOCATION : Sheets.CHEST_LOCATION;
             VertexConsumer builder = renderMaterial.buffer(renderTypeBuffer, RenderType::entityCutout);
             this.renderChest(matrixStack, builder, this.lid, this.lock, this.base, progress, light, OverlayTexture.NO_OVERLAY);
@@ -139,70 +146,58 @@ public class MopedRenderer extends AbstractMotorcycleRenderer<MopedEntity>
     }
 
     @Override
-    public void applyPlayerModel(MopedEntity entity, Player player, PlayerModel model, float partialTicks)
-    {
+    public void applyPlayerModel(MopedEntity entity, Player player, PlayerModel model, float partialTicks) {
         float wheelAngle = entity.prevWheelAngle + (entity.wheelAngle - entity.prevWheelAngle) * partialTicks;
-        float wheelAngleNormal = wheelAngle / 45F;
-        float turnRotation = wheelAngleNormal * 6F;
-        model.rightArm.xRot = (float) Math.toRadians(-65F - turnRotation);
-        model.rightArm.yRot = (float) Math.toRadians(5F);
-        model.rightArm.z -= 1;
-        model.rightArm.z -= wheelAngleNormal * 2;
-        model.leftArm.xRot = (float) Math.toRadians(-65F + turnRotation);
-        model.leftArm.yRot = (float) Math.toRadians(-5F);
-        model.leftArm.z -= 1;
-        model.leftArm.z += wheelAngleNormal * 2;
-        model.rightLeg.xRot = (float) Math.toRadians(-62F);
-        model.leftLeg.xRot = (float) Math.toRadians(-62F);
+        float wheelAngleNormal = wheelAngle / 45.0f;
+        float turnRotation = wheelAngleNormal * 6.0f;
+        model.rightArm.xRot = (float)Math.toRadians(-65.0f - turnRotation);
+        model.rightArm.yRot = (float)Math.toRadians(5.0);
+        model.rightArm.z -= 1.0f;
+        model.rightArm.z -= wheelAngleNormal * 2.0f;
+        model.leftArm.xRot = (float)Math.toRadians(-65.0f + turnRotation);
+        model.leftArm.yRot = (float)Math.toRadians(-5.0);
+        model.leftArm.z -= 1.0f;
+        model.leftArm.z += wheelAngleNormal * 2.0f;
+        model.rightLeg.xRot = (float)Math.toRadians(-62.0);
+        model.leftLeg.xRot = (float)Math.toRadians(-62.0);
     }
 
     @Override
-    public void applyPlayerRender(MopedEntity entity, Player player, float partialTicks, PoseStack matrixStack)
-    {
+    public void applyPlayerRender(MopedEntity entity, Player player, float partialTicks, PoseStack matrixStack) {
         int index = entity.getSeatTracker().getSeatIndex(player.getUUID());
-        if(index != -1)
-        {
+        if (index != -1) {
             VehicleProperties properties = entity.getProperties();
             Seat seat = properties.getSeats().get(index);
-            Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).multiply(-1, 1, 1).scale(0.0625);
-            double scale = 32.0 / 30.0;
+            Vec3 seatVec = seat.getPosition().add(0.0, (double)(properties.getAxleOffset() + properties.getWheelOffset()), 0.0).scale(properties.getBodyPosition().getScale()).multiply(-1.0, 1.0, 1.0).scale(0.0625);
+            double scale = 1.0666666666666667;
             double offsetX = -seatVec.x * scale;
-            double offsetY = (seatVec.y - player.getVehicleAttachmentPoint(entity).y + 0.25) * scale + 24 * 0.0625; //Player is 2 blocks high tall but renders at 1.8 blocks tall
+            double offsetY = (seatVec.y - player.getVehicleAttachmentPoint(entity).y + 0.25) * scale + 1.5;
             double offsetZ = seatVec.z * scale;
             matrixStack.translate(offsetX, offsetY, offsetZ);
             float currentSpeedNormal = (entity.prevCurrentSpeed + (entity.currentSpeed - entity.prevCurrentSpeed) * partialTicks) / entity.getMaxSpeed();
-            float turnAngleNormal = (entity.prevTurnAngle + (entity.turnAngle - entity.prevTurnAngle) * partialTicks) / 45F;
-            matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * 20F));
+            float turnAngleNormal = (entity.prevTurnAngle + (entity.turnAngle - entity.prevTurnAngle) * partialTicks) / 45.0f;
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * 20.0f));
             matrixStack.translate(-offsetX, -offsetY, -offsetZ);
         }
     }
 
-    private void renderChest(PoseStack matrixStack, VertexConsumer builder, ModelPart lid, ModelPart lock, ModelPart base, float openProgress, int lightTexture, int overlayTexture)
-    {
-        lid.xRot = -(openProgress * ((float) Math.PI / 2F));
-        lock.xRot = lid.xRot;
+    private void renderChest(PoseStack matrixStack, VertexConsumer builder, ModelPart lid, ModelPart lock, ModelPart base, float openProgress, int lightTexture, int overlayTexture) {
+        lock.xRot = lid.xRot = -(openProgress * 1.5707964f);
         lid.render(matrixStack, builder, lightTexture, overlayTexture);
         lock.render(matrixStack, builder, lightTexture, overlayTexture);
         base.render(matrixStack, builder, lightTexture, overlayTexture);
     }
 
-    @Nullable
     @Override
-    public EntityRayTracer.IRayTraceTransforms getRayTraceTransforms()
-    {
-        return (tracer, transforms, parts) ->
-        {
-            EntityRayTracer.createTransformListForPart(SpecialModels.MOPED_BODY, parts, transforms);
-            EntityRayTracer.createTransformListForPart(SpecialModels.MOPED_HANDLES, parts, transforms,
-                    EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.0625F, 0.0F),
-                    EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.835F, 0.525F),
-                    EntityRayTracer.MatrixTransformation.createScale(0.8F));
-            EntityRayTracer.createTransformListForPart(SpecialModels.MOPED_MUD_GUARD, parts, transforms,
-                    EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.0625F, 0.0F),
-                    EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.12F, 0.785F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -22.5F),
-                    EntityRayTracer.MatrixTransformation.createScale(0.9F));
-            EntityRayTracer.createFuelPartTransforms(ModEntities.MOPED.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
+    @Nullable
+    public EntityRayTracer.IRayTraceTransforms getRayTraceTransforms() {
+        return (tracer, transforms, parts) -> {
+            EntityRayTracer.createTransformListForPart((ISpecialModel)SpecialModels.MOPED_BODY, (HashMap<EntityRayTracer.RayTracePart, List<EntityRayTracer.MatrixTransformation>>)parts, (List<EntityRayTracer.MatrixTransformation>)transforms, new EntityRayTracer.MatrixTransformation[0]);
+            EntityRayTracer.createTransformListForPart((ISpecialModel)SpecialModels.MOPED_HANDLES, (HashMap<EntityRayTracer.RayTracePart, List<EntityRayTracer.MatrixTransformation>>)parts, (List<EntityRayTracer.MatrixTransformation>)transforms, EntityRayTracer.MatrixTransformation.createTranslation(0.0f, -0.0625f, 0.0f), EntityRayTracer.MatrixTransformation.createTranslation(0.0f, 0.835f, 0.525f), EntityRayTracer.MatrixTransformation.createScale(0.8f));
+            EntityRayTracer.createTransformListForPart((ISpecialModel)SpecialModels.MOPED_MUD_GUARD, (HashMap<EntityRayTracer.RayTracePart, List<EntityRayTracer.MatrixTransformation>>)parts, (List<EntityRayTracer.MatrixTransformation>)transforms, EntityRayTracer.MatrixTransformation.createTranslation(0.0f, -0.0625f, 0.0f), EntityRayTracer.MatrixTransformation.createTranslation(0.0f, -0.12f, 0.785f), EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -22.5f), EntityRayTracer.MatrixTransformation.createScale(0.9f));
+            EntityRayTracer.createFuelPartTransforms((EntityType<? extends VehicleEntity>)((EntityType)ModEntities.MOPED.get()), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
         };
     }
 }
+
+

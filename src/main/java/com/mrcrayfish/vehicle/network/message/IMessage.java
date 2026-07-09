@@ -1,25 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.network.RegistryFriendlyByteBuf
+ *  net.minecraft.network.protocol.common.custom.CustomPacketPayload
+ *  net.neoforged.neoforge.network.handling.IPayloadContext
+ */
 package com.mrcrayfish.vehicle.network.message;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/**
- * Author: MrCrayfish
- * <p>
- * Ported to the NeoForge 1.21.1 custom payload network system. Each message is a
- * {@link CustomPacketPayload} that supplies its own {@code TYPE} and {@code STREAM_CODEC}.
- */
-public interface IMessage<T extends CustomPacketPayload> extends CustomPacketPayload
-{
-    void encode(T message, RegistryFriendlyByteBuf buffer);
+public interface IMessage<T extends CustomPacketPayload>
+extends CustomPacketPayload {
+    public void encode(T var1, RegistryFriendlyByteBuf var2);
 
-    T decode(RegistryFriendlyByteBuf buffer);
+    public T decode(RegistryFriendlyByteBuf var1);
 
-    void handle(T message, IPayloadContext context);
+    public void handle(T var1, IPayloadContext var2);
 
-    static void enqueueTask(IPayloadContext context, Runnable runnable)
-    {
+    public static void enqueueTask(IPayloadContext context, Runnable runnable) {
         context.enqueueWork(runnable);
     }
 }
+

@@ -1,10 +1,26 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.core.BlockPos
+ *  net.minecraft.core.HolderLookup$Provider
+ *  net.minecraft.core.registries.BuiltInRegistries
+ *  net.minecraft.network.RegistryFriendlyByteBuf
+ *  net.minecraft.network.codec.StreamCodec
+ *  net.minecraft.network.protocol.common.custom.CustomPacketPayload
+ *  net.minecraft.network.protocol.common.custom.CustomPacketPayload$Type
+ *  net.minecraft.resources.ResourceLocation
+ *  net.minecraft.server.level.ServerPlayer
+ *  net.minecraft.world.entity.Entity
+ *  net.minecraft.world.entity.EntityType
+ *  net.minecraft.world.entity.item.ItemEntity
+ *  net.minecraft.world.entity.player.Player
+ *  net.minecraft.world.item.DyeItem
+ *  net.minecraft.world.item.ItemStack
+ *  net.minecraft.world.level.Level
+ *  net.neoforged.neoforge.network.handling.IPayloadContext
+ */
 package com.mrcrayfish.vehicle.network.message;
-
-import com.mrcrayfish.vehicle.Reference;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
@@ -18,160 +34,133 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.inventory.container.WorkstationContainer;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
+import com.mrcrayfish.vehicle.network.message.IMessage;
 import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-
-/**
- * Author: MrCrayfish
- */
-public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
-{
-    public static final CustomPacketPayload.Type<MessageCraftVehicle> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "craft_vehicle"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, MessageCraftVehicle> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode(msg, buf), buf -> new MessageCraftVehicle().decode(buf));
-
-    @Override
-    public CustomPacketPayload.Type<? extends CustomPacketPayload> type()
-    {
-        return TYPE;
-    }
-
+public class MessageCraftVehicle
+implements IMessage<MessageCraftVehicle> {
+    public static final CustomPacketPayload.Type<MessageCraftVehicle> TYPE = new CustomPacketPayload.Type(ResourceLocation.fromNamespaceAndPath((String)"vehicle", (String)"craft_vehicle"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MessageCraftVehicle> STREAM_CODEC = StreamCodec.ofMember((msg, buf) -> msg.encode((MessageCraftVehicle)msg, (RegistryFriendlyByteBuf)buf), buf -> new MessageCraftVehicle().decode((RegistryFriendlyByteBuf)buf));
     private String vehicleId;
     private BlockPos pos;
 
-    public MessageCraftVehicle() {}
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
 
-    public MessageCraftVehicle(String vehicleId, BlockPos pos)
-    {
+    public MessageCraftVehicle() {
+    }
+
+    public MessageCraftVehicle(String vehicleId, BlockPos pos) {
         this.vehicleId = vehicleId;
         this.pos = pos;
     }
 
     @Override
-    public void encode(MessageCraftVehicle message, RegistryFriendlyByteBuf buffer)
-    {
+    public void encode(MessageCraftVehicle message, RegistryFriendlyByteBuf buffer) {
         buffer.writeUtf(message.vehicleId, 128);
         buffer.writeBlockPos(message.pos);
     }
 
     @Override
-    public MessageCraftVehicle decode(RegistryFriendlyByteBuf buffer)
-    {
+    public MessageCraftVehicle decode(RegistryFriendlyByteBuf buffer) {
         return new MessageCraftVehicle(buffer.readUtf(128), buffer.readBlockPos());
     }
 
     @Override
-    public void handle(MessageCraftVehicle message, IPayloadContext context)
-    {
-        context.enqueueWork(() ->
-        {
-            ServerPlayer player = ((ServerPlayer) context.player());
-            if(player == null)
+    public void handle(MessageCraftVehicle message, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            ItemStack workstationWheelStack;
+            ItemStack workstationEngineStack;
+            ItemStack workstationDyeStack;
+            ServerPlayer player = (ServerPlayer)context.player();
+            if (player == null) {
                 return;
-
+            }
             Level world = player.level();
-            if(!(player.containerMenu instanceof WorkstationContainer))
+            if (!(player.containerMenu instanceof WorkstationContainer)) {
                 return;
-
-            WorkstationContainer workstation = (WorkstationContainer) player.containerMenu;
-            if(!workstation.getPos().equals(message.pos))
+            }
+            WorkstationContainer workstation = (WorkstationContainer)player.containerMenu;
+            if (!workstation.getPos().equals((Object)message.pos)) {
                 return;
-
-            ResourceLocation entityId = ResourceLocation.parse(message.vehicleId);
-            if(Config.SERVER.disabledVehicles.get().contains(entityId.toString()))
+            }
+            ResourceLocation entityId = ResourceLocation.parse((String)message.vehicleId);
+            if (((List)Config.SERVER.disabledVehicles.get()).contains(entityId.toString())) {
                 return;
-
-            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entityId);
-            if(entityType == null)
+            }
+            EntityType entityType = (EntityType)BuiltInRegistries.ENTITY_TYPE.get(entityId);
+            if (entityType == null) {
                 return;
-
-            if(VehicleRegistry.getRegisteredVehicleTypes().stream().noneMatch(entry -> entry.get().equals(entityType)))
+            }
+            if (VehicleRegistry.getRegisteredVehicleTypes().stream().noneMatch(entry -> ((EntityType)entry.get()).equals(entityType))) {
                 return;
-
+            }
             WorkstationRecipe recipe = WorkstationRecipes.getRecipe(entityType, world);
-            if(recipe == null || !recipe.hasMaterials(player))
+            if (recipe == null || !recipe.hasMaterials((Player)player)) {
                 return;
-
+            }
             Entity entity = entityType.create(world);
-            if(!(entity instanceof VehicleEntity))
+            if (!(entity instanceof VehicleEntity)) {
                 return;
-
+            }
             IEngineType engineType = EngineType.NONE;
-            VehicleEntity vehicle = (VehicleEntity) entity;
-            if(vehicle instanceof PoweredVehicleEntity)
-            {
-                PoweredVehicleEntity entityPoweredVehicle = (PoweredVehicleEntity) entity;
+            VehicleEntity vehicle = (VehicleEntity)entity;
+            if (vehicle instanceof PoweredVehicleEntity) {
+                ItemStack wheel;
+                PoweredVehicleEntity entityPoweredVehicle = (PoweredVehicleEntity)entity;
                 engineType = entityPoweredVehicle.getProperties().getEngineType();
-
                 WorkstationTileEntity workstationTileEntity = workstation.getTileEntity();
                 ItemStack workstationEngine = workstationTileEntity.getItem(1);
-                if(workstationEngine.isEmpty() || !(workstationEngine.getItem() instanceof EngineItem))
+                if (workstationEngine.isEmpty() || !(workstationEngine.getItem() instanceof EngineItem)) {
                     return;
-
-                IEngineType engineType2 = ((EngineItem) workstationEngine.getItem()).getEngineType();
-                if(engineType != EngineType.NONE && engineType != engineType2)
+                }
+                IEngineType engineType2 = ((EngineItem)workstationEngine.getItem()).getEngineType();
+                if (engineType != EngineType.NONE && engineType != engineType2) {
                     return;
-
-                if(entityPoweredVehicle.canChangeWheels())
-                {
-                    ItemStack wheel = workstationTileEntity.getInventory().get(2);
-                    if(!(wheel.getItem() instanceof WheelItem))
-                        return;
+                }
+                if (entityPoweredVehicle.canChangeWheels() && !((wheel = (ItemStack)workstationTileEntity.getInventory().get(2)).getItem() instanceof WheelItem)) {
+                    return;
                 }
             }
-
-            /* At this point we have verified the crafting and can perform irreversible actions */
-
-            recipe.consumeMaterials(player);
-
+            recipe.consumeMaterials((Player)player);
             WorkstationTileEntity workstationTileEntity = workstation.getTileEntity();
-
-            /* Gets the color based on the dye */
             int color = VehicleEntity.DYE_TO_COLOR[0];
-            if(vehicle.canBeColored())
-            {
-                ItemStack workstationDyeStack = workstationTileEntity.getInventory().get(0);
-                if(workstationDyeStack.getItem() instanceof DyeItem)
-                {
-                    DyeItem dyeItem = (DyeItem) workstationDyeStack.getItem();
-                    color = dyeItem.getDyeColor().getTextColor();
-                    workstationTileEntity.getInventory().set(0, ItemStack.EMPTY);
-                }
+            if (vehicle.canBeColored() && (workstationDyeStack = (ItemStack)workstationTileEntity.getInventory().get(0)).getItem() instanceof DyeItem) {
+                DyeItem dyeItem = (DyeItem)workstationDyeStack.getItem();
+                color = dyeItem.getDyeColor().getTextureDiffuseColor();
+                workstationTileEntity.getInventory().set(0, ItemStack.EMPTY);
             }
-
             ItemStack engineStack = ItemStack.EMPTY;
-            if(engineType != EngineType.NONE)
-            {
-                ItemStack workstationEngineStack = workstationTileEntity.getInventory().get(1);
-                if(workstationEngineStack.getItem() instanceof EngineItem)
-                {
-                    engineStack = workstationEngineStack.copy();
-                    workstationTileEntity.getInventory().set(1, ItemStack.EMPTY);
-                }
+            if (engineType != EngineType.NONE && (workstationEngineStack = (ItemStack)workstationTileEntity.getInventory().get(1)).getItem() instanceof EngineItem) {
+                engineStack = workstationEngineStack.copy();
+                workstationTileEntity.getInventory().set(1, ItemStack.EMPTY);
             }
-
             ItemStack wheelStack = ItemStack.EMPTY;
-            if(vehicle instanceof PoweredVehicleEntity && ((PoweredVehicleEntity) vehicle).canChangeWheels())
-            {
-                ItemStack workstationWheelStack = workstationTileEntity.getInventory().get(2);
-                if(workstationWheelStack.getItem() instanceof WheelItem)
-                {
-                    wheelStack = workstationWheelStack.copy();
-                    workstationTileEntity.getInventory().set(2, ItemStack.EMPTY);
-                }
+            if (vehicle instanceof PoweredVehicleEntity && ((PoweredVehicleEntity)vehicle).canChangeWheels() && (workstationWheelStack = (ItemStack)workstationTileEntity.getInventory().get(2)).getItem() instanceof WheelItem) {
+                wheelStack = workstationWheelStack.copy();
+                workstationTileEntity.getInventory().set(2, ItemStack.EMPTY);
             }
-
-            ItemStack stack = VehicleCrateBlock.create(world.registryAccess(), entityId, color, engineStack, wheelStack);
-            world.addFreshEntity(new ItemEntity(world, message.pos.getX() + 0.5, message.pos.getY() + 1.125, message.pos.getZ() + 0.5, stack));
+            ItemStack stack = VehicleCrateBlock.create((HolderLookup.Provider)world.registryAccess(), entityId, color, engineStack, wheelStack);
+            world.addFreshEntity((Entity)new ItemEntity(world, (double)message.pos.getX() + 0.5, (double)message.pos.getY() + 1.125, (double)message.pos.getZ() + 0.5, stack));
         });
     }
 }
+

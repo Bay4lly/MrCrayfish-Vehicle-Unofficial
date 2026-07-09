@@ -1,7 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.core.BlockPos
+ *  net.minecraft.network.chat.Component
+ *  net.minecraft.world.item.Item$TooltipContext
+ *  net.minecraft.world.item.ItemStack
+ *  net.minecraft.world.item.TooltipFlag
+ *  net.minecraft.world.level.BlockGetter
+ *  net.minecraft.world.level.block.Block
+ *  net.minecraft.world.level.block.state.BlockBehaviour$Properties
+ *  net.minecraft.world.level.block.state.BlockState
+ *  net.minecraft.world.level.material.MapColor
+ *  net.minecraft.world.phys.shapes.CollisionContext
+ *  net.minecraft.world.phys.shapes.VoxelShape
+ */
 package com.mrcrayfish.vehicle.block;
 
+import com.mrcrayfish.vehicle.block.ObjectEntityBlock;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
@@ -12,37 +32,25 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
-import java.util.List;
+public class TrafficConeBlock
+extends Block {
+    private static final VoxelShape COLLISION_SHAPE = Block.box((double)2.0, (double)0.0, (double)2.0, (double)14.0, (double)18.0, (double)14.0);
+    private static final VoxelShape SELECTION_SHAPE = Block.box((double)1.0, (double)0.0, (double)1.0, (double)15.0, (double)16.0, (double)15.0);
 
-/**
- * Author: MrCrayfish
- */
-public class TrafficConeBlock extends Block
-{
-    private static final VoxelShape COLLISION_SHAPE = Block.box(2, 0, 2, 14, 18, 14);
-    private static final VoxelShape SELECTION_SHAPE = Block.box(1, 0, 1, 15, 16, 15);
-
-    public TrafficConeBlock()
-    {
-        super(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.5F));
+    public TrafficConeBlock() {
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.5f));
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, List<Component> list, TooltipFlag flag)
-    {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag) {
         ObjectEntityBlock.appendHoverText(this, stack, context, list, flag);
     }
 
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context)
-    {
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         return SELECTION_SHAPE;
     }
 
-    @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context)
-    {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         return COLLISION_SHAPE;
     }
 }
+
